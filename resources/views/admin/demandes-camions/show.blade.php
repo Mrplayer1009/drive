@@ -11,7 +11,7 @@
                 <h1 class="text-3xl font-bold text-black mb-2">Demande de Camion #{{ $demande->id }}</h1>
                 <p class="text-black">Franchisé : {{ $demande->franchise->nom_complet }}</p>
             </div>
-            <a href="{{ route('admin.demandes-camions.index') }}" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition duration-300">
+            <a href="{{ route('admin.demandes-camions.index') }}" class="bg-gray-600 hover:bg-gray-700 text-black px-4 py-2 rounded-lg transition duration-300">
                 <i class="fas fa-arrow-left mr-2"></i>
                 Retour
             </a>
@@ -158,8 +158,9 @@
                     <div class="flex justify-between p-2 bg-gray-50 rounded">
                         <span class="text-sm text-black">Statut :</span>
                         <span class="px-2 py-1 text-xs font-medium rounded-full 
-                            {{ $demande->camion->statut === 'en_service' ? 'bg-green-100 text-green-800' : 
-                               ($demande->camion->statut === 'en_maintenance' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800') }}">
+                            {{ $demande->camion->statut === 'en_utilisation' ? 'bg-green-100 text-green-800' : 
+                               ($demande->camion->statut === 'en_maintenance' ? 'bg-red-100 text-red-800' : 
+                               ($demande->camion->statut === 'disponible' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800')) }}">
                             {{ ucfirst($demande->camion->statut) }}
                         </span>
                     </div>

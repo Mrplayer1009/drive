@@ -11,7 +11,7 @@
                 <h1 class="text-3xl font-bold text-black mb-2">Créer une Demande de Camion</h1>
                 <p class="text-black">Créer une demande de camion pour un franchisé</p>
             </div>
-            <a href="{{ route('admin.demandes-camions.index') }}" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition duration-300">
+            <a href="{{ route('admin.demandes-camions.index') }}" class="bg-gray-600 hover:bg-gray-700 text-black px-4 py-2 rounded-lg transition duration-300">
                 <i class="fas fa-arrow-left mr-2"></i>
                 Retour
             </a>

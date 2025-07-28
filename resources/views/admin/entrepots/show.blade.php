@@ -12,11 +12,11 @@
                 <p class="text-black">{{ $entrepot->nom }}</p>
             </div>
             <div class="flex space-x-2">
-                <a href="{{ route('admin.entrepots.edit', $entrepot) }}" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg transition duration-300">
+                <a href="{{ route('admin.entrepots.edit', $entrepot) }}" class="bg-orange-600 hover:bg-orange-700 text-black px-4 py-2 rounded-lg transition duration-300">
                     <i class="fas fa-edit mr-2"></i>
                     Modifier
                 </a>
-                <a href="{{ route('admin.entrepots.index') }}" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition duration-300">
+                <a href="{{ route('admin.entrepots.index') }}" class="bg-gray-600 hover:bg-gray-700 text-black px-4 py-2 rounded-lg transition duration-300">
                     <i class="fas fa-arrow-left mr-2"></i>
                     Retour
                 </a>

@@ -11,7 +11,7 @@
                 <h1 class="text-3xl font-bold text-black mb-2">Traiter la Panne #{{ $notification->id }}</h1>
                 <p class="text-black">Camion : {{ $notification->camion->immatriculation }} ({{ $notification->camion->marque }} {{ $notification->camion->modele }})</p>
             </div>
-            <a href="{{ route('admin.notifications-pannes.show', $notification) }}" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition duration-300">
+            <a href="{{ route('admin.notifications-pannes.show', $notification) }}" class="bg-gray-600 hover:bg-gray-700 text-black px-4 py-2 rounded-lg transition duration-300">
                 <i class="fas fa-arrow-left mr-2"></i>
                 Retour
             </a>
@@ -66,9 +66,9 @@
                     </label>
                 </div>
 
-                <!-- Sélection du camion de remplacement (caché par défaut) -->
+                <!-- SChoisir le camion -->
                 <div id="selection_camion_remplacement" class="mb-4 hidden">
-                    <label for="camion_remplacement" class="block text-sm font-medium text-black mb-2">Camion de remplacement</label>
+                    <label for="camion_remplacement" class="block text-sm font-medium text-black mb-2">Camion de remplacement <span class="text-red-500">*</span></label>
                     <select id="camion_remplacement" name="camion_remplacement" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500">
                         <option value="">Choisir un camion...</option>
                         @php

@@ -11,7 +11,7 @@
                 <h1 class="text-3xl font-bold text-black mb-2">Gestion des Commandes</h1>
                 <p class="text-black">Supervisez toutes les commandes de stock</p>
             </div>
-            <a href="{{ route('admin.commandes.create') }}" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg transition duration-300">
+            <a href="{{ route('admin.commandes.create') }}" class="bg-orange-600 hover:bg-orange-700 text-black px-4 py-2 rounded-lg transition duration-300">
                 <i class="fas fa-plus mr-2"></i>
                 Nouvelle commande
             </a>
@@ -141,7 +141,7 @@
             <div class="flex items-center">
                 <div class="flex-shrink-0">
                     <div class="w-8 h-8 bg-yellow-500 rounded-md flex items-center justify-center">
-                        <i class="fas fa-clock text-white"></i>
+                        <i class="fas fa-clock text-black"></i>
                     </div>
                 </div>
                 <div class="ml-4">
@@ -155,7 +155,7 @@
             <div class="flex items-center">
                 <div class="flex-shrink-0">
                     <div class="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center">
-                        <i class="fas fa-check text-white"></i>
+                        <i class="fas fa-check text-black"></i>
                     </div>
                 </div>
                 <div class="ml-4">
@@ -169,7 +169,7 @@
             <div class="flex items-center">
                 <div class="flex-shrink-0">
                     <div class="w-8 h-8 bg-green-500 rounded-md flex items-center justify-center">
-                        <i class="fas fa-truck text-white"></i>
+                        <i class="fas fa-truck text-black"></i>
                     </div>
                 </div>
                 <div class="ml-4">
@@ -183,7 +183,7 @@
             <div class="flex items-center">
                 <div class="flex-shrink-0">
                     <div class="w-8 h-8 bg-orange-500 rounded-md flex items-center justify-center">
-                        <i class="fas fa-euro-sign text-white"></i>
+                        <i class="fas fa-euro-sign text-black"></i>
                     </div>
                 </div>
                 <div class="ml-4">

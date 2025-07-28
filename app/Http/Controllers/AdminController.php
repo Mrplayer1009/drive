@@ -22,19 +22,29 @@ class AdminController extends Controller
     {
         $stats = [
             'total_franchises' => Franchise::count(),
-            'franchises_actifs' => Franchise::where('statut', 'actif')->count(),
             'total_camions' => Camion::count(),
+            'total_entrepots' => Entrepot::count(),
+            'total_produits' => Produit::count(),
+            'total_commandes' => Commande::count(),
+            'total_ventes' => Vente::count(),
+            'franchises_actifs' => Franchise::where('statut', 'actif')->count(),
             'camions_disponibles' => Camion::where('statut', 'disponible')->count(),
+            'camions_en_utilisation' => Camion::where('statut', 'en_utilisation')->count(),
+            'camions_maintenance' => Camion::where('statut', 'en_maintenance')->count(),
+            'commandes_en_attente' => Commande::where('statut', 'en_attente')->count(),
+            'commandes_validees' => Commande::where('statut', 'validee')->count(),
+            'ventes_aujourd_hui' => Vente::whereDate('date_vente', today())->count(),
             'total_ventes_mois' => Vente::whereMonth('date_vente', now()->month)->sum('montant_total'),
             'total_reverse_mois' => Vente::whereMonth('date_vente', now()->month)->sum('montant_reverse'),
-            'commandes_en_attente' => Commande::where('statut', 'en_attente')->count(),
+            'notifications_pannes' => NotificationPanne::where('statut', 'signalee')->count(),
+            'demandes_camions' => DemandeCamion::where('statut', 'en_attente')->count(),
         ];
 
+        $ventes_recentes = Vente::with('franchise')->latest()->take(5)->get();
+        $commandes_recentes = Commande::with(['franchise', 'entrepot'])->latest()->take(5)->get();
         $franchises_recentes = Franchise::latest()->take(5)->get();
-        $ventes_recentes = Vente::with('franchise')->latest()->take(10)->get();
-        $commandes_recentes = Commande::with(['franchise', 'entrepot'])->latest()->take(10)->get();
 
-        return view('admin.dashboard', compact('stats', 'franchises_recentes', 'ventes_recentes', 'commandes_recentes'));
+        return view('admin.dashboard', compact('stats', 'ventes_recentes', 'commandes_recentes', 'franchises_recentes'));
     }
 
     public function franchises()
@@ -218,11 +228,10 @@ class AdminController extends Controller
         // Statistiques
         $stats = [
             'total_camions' => Camion::count(),
-            'en_service' => Camion::where('statut', 'en_utilisation')->count(),
+            'disponibles' => Camion::where('statut', 'disponible')->count(),
+            'en_utilisation' => Camion::where('statut', 'en_utilisation')->count(),
             'en_maintenance' => Camion::where('statut', 'en_maintenance')->count(),
-            'assignes' => Camion::whereHas('franchises', function($query) {
-                $query->where('franchise_camion.statut', 'actif');
-            })->count(),
+            'assignes' => Camion::whereHas('franchises')->count(),
         ];
         
         return view('admin.camions.index', compact('camions', 'franchises', 'stats'));
@@ -251,6 +260,17 @@ class AdminController extends Controller
         return redirect()->route('admin.camions.index')->with('success', 'Franchisé assigné au camion avec succès');
     }
 
+    public function camionsRemoveFranchise(Camion $camion)
+    {
+        // Retirer tous les franchisés assignés à ce camion
+        $camion->franchises()->detach();
+        
+        // Mettre le camion en statut disponible
+        $camion->update(['statut' => 'disponible']);
+
+        return redirect()->route('admin.camions.index')->with('success', 'Franchisé retiré du camion avec succès');
+    }
+
     public function camionsCreate()
     {
         $franchises = Franchise::where('statut', 'actif')->get();
@@ -260,17 +280,22 @@ class AdminController extends Controller
     public function camionsStore(Request $request)
     {
         $request->validate([
-            'immatriculation' => 'required|string|unique:camions',
-            'marque' => 'required|string|max:255',
-            'modele' => 'required|string|max:255',
+            'immatriculation' => 'required|string|max:20|unique:camions',
+            'marque' => 'required|string|max:50',
+            'modele' => 'required|string|max:50',
             'annee' => 'required|integer|min:1900|max:' . (date('Y') + 1),
-            'statut' => 'required|in:disponible,en_service,maintenance,hors_service',
-            'ville_localisation' => 'required|string|max:255',
+            'statut' => 'required|in:disponible,en_utilisation,en_maintenance,hors_service',
+            'ville_localisation' => 'nullable|string|max:100',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
             'notes' => 'nullable|string',
+            'derniere_maintenance' => 'nullable|date',
+            'prochaine_maintenance' => 'nullable|date|after:derniere_maintenance',
         ]);
 
         Camion::create($request->all());
-        return redirect()->route('admin.camions.index')->with('success', 'Camion créé avec succès');
+
+        return redirect()->route('admin.camions.index')->with('success', 'Camion créé avec succès.');
     }
 
     public function camionsShow(Camion $camion)
@@ -287,17 +312,22 @@ class AdminController extends Controller
     public function camionsUpdate(Request $request, Camion $camion)
     {
         $request->validate([
-            'immatriculation' => 'required|string|unique:camions,immatriculation,' . $camion->id,
-            'marque' => 'required|string|max:255',
-            'modele' => 'required|string|max:255',
+            'immatriculation' => 'required|string|max:20|unique:camions,immatriculation,' . $camion->id,
+            'marque' => 'required|string|max:50',
+            'modele' => 'required|string|max:50',
             'annee' => 'required|integer|min:1900|max:' . (date('Y') + 1),
-            'statut' => 'required|in:disponible,en_service,maintenance,hors_service',
-            'ville_localisation' => 'required|string|max:255',
+            'statut' => 'required|in:disponible,en_utilisation,en_maintenance,hors_service',
+            'ville_localisation' => 'nullable|string|max:100',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
             'notes' => 'nullable|string',
+            'derniere_maintenance' => 'nullable|date',
+            'prochaine_maintenance' => 'nullable|date|after:derniere_maintenance',
         ]);
 
         $camion->update($request->all());
-        return redirect()->route('admin.camions.index')->with('success', 'Camion mis à jour avec succès');
+
+        return redirect()->route('admin.camions.index')->with('success', 'Camion mis à jour avec succès.');
     }
 
     public function camionsDestroy(Camion $camion)
@@ -316,7 +346,7 @@ class AdminController extends Controller
     public function ventesCreate()
     {
         $franchises = Franchise::where('statut', 'actif')->get();
-        $camions = Camion::where('statut', 'en_service')->get();
+        $camions = Camion::where('statut', 'en_utilisation')->get();
         return view('admin.ventes.create', compact('franchises', 'camions'));
     }
 
@@ -355,7 +385,7 @@ class AdminController extends Controller
     public function ventesEdit(Vente $vente)
     {
         $franchises = Franchise::where('statut', 'actif')->get();
-        $camions = Camion::where('statut', 'en_service')->get();
+        $camions = Camion::where('statut', 'en_utilisation')->get();
         return view('admin.ventes.edit', compact('vente', 'franchises', 'camions'));
     }
 
@@ -603,11 +633,17 @@ class AdminController extends Controller
 
     public function notificationsPannesUpdate(Request $request, NotificationPanne $notification)
     {
-        $request->validate([
+        $rules = [
             'statut' => 'required|in:signalee,en_maintenance,resolue,ignoree',
             'commentaire_admin' => 'nullable|string',
-            'camion_remplacement' => 'required_if:attribuer_remplacement,1|exists:camions,id',
-        ]);
+        ];
+
+        // Ajouter la validation du camion de remplacement seulement si la checkbox est cochée
+        if ($request->has('attribuer_remplacement') && $request->attribuer_remplacement == '1') {
+            $rules['camion_remplacement'] = 'required|exists:camions,id';
+        }
+
+        $request->validate($rules);
 
         $data = [
             'statut' => $request->statut,
@@ -625,11 +661,11 @@ class AdminController extends Controller
         if ($request->has('mettre_camion_maintenance')) {
             $notification->camion->update(['statut' => 'en_maintenance']);
         } elseif ($request->statut === 'resolue') {
-            $notification->camion->update(['statut' => 'en_service']);
+            $notification->camion->update(['statut' => 'en_utilisation']);
         }
 
         // Attribuer un camion de remplacement si demandé
-        if ($request->has('attribuer_remplacement') && $request->filled('camion_remplacement')) {
+        if ($request->has('attribuer_remplacement') && $request->attribuer_remplacement == '1' && $request->filled('camion_remplacement')) {
             $camionRemplacement = Camion::find($request->camion_remplacement);
             
             if ($camionRemplacement && $camionRemplacement->statut === 'disponible') {
@@ -642,8 +678,8 @@ class AdminController extends Controller
                     'statut' => 'actif'
                 ]);
                 
-                // Mettre le nouveau camion en service
-                $camionRemplacement->update(['statut' => 'en_service']);
+                // Mettre le nouveau camion en utilisation
+                $camionRemplacement->update(['statut' => 'en_utilisation']);
                 
                 // Ajouter un commentaire sur l'attribution
                 $data['commentaire_admin'] = ($data['commentaire_admin'] ?? '') . "\n\nCamion de remplacement attribué : " . $camionRemplacement->immatriculation;
@@ -692,48 +728,49 @@ class AdminController extends Controller
 
     public function demandesCamionsUpdate(Request $request, DemandeCamion $demande)
     {
-        $request->validate([
+        $rules = [
             'statut' => 'required|in:en_attente,approuvee,refusee',
-            'camion_attribue' => 'required_if:statut,approuvee',
             'commentaire_admin' => 'nullable|string',
-        ]);
-
-        $data = [
-            'statut' => $request->statut,
-            'commentaire_admin' => $request->commentaire_admin,
+            'camion_attribue' => 'nullable|exists:camions,id',
         ];
 
-        // Si approuvé, ajouter la date de réponse
         if ($request->statut === 'approuvee') {
-            $data['date_reponse'] = now();
-            
-            // Attribuer le camion sélectionné
-            if ($request->camion_attribue) {
-                $camion = Camion::find($request->camion_attribue);
-                if ($camion) {
-                    // Retirer l'ancien camion si c'est un remplacement
-                    if ($demande->camion_id) {
-                        $demande->franchise->camions()->detach($demande->camion_id);
-                    }
-                    
-                    // Attribuer le nouveau camion
-                    $demande->franchise->camions()->attach($camion->id, [
-                        'date_attribution' => now(),
-                        'statut' => 'actif'
-                    ]);
-                    
-                    // Mettre le nouveau camion en service
-                    $camion->update(['statut' => 'en_service']);
-                }
-            }
-        } elseif ($request->statut === 'refusee') {
-            $data['date_reponse'] = now();
+            $rules['camion_attribue'] = 'required|exists:camions,id';
         }
 
-        $demande->update($data);
+        $request->validate($rules);
 
-        return redirect()->route('admin.demandes-camions.show', $demande)
-                        ->with('success', 'Demande traitée avec succès.');
+        DB::beginTransaction();
+        try {
+            $demande->update([
+                'statut' => $request->statut,
+                'commentaire_admin' => $request->commentaire_admin,
+                'date_reponse' => now(),
+            ]);
+
+            if ($request->statut === 'approuvee' && $request->camion_attribue) {
+                $camion = Camion::find($request->camion_attribue);
+
+                // Detach old truck if it was a replacement request
+                if ($demande->type_demande === 'remplacement' && $demande->camion_id) {
+                    $demande->franchise->camions()->updateExistingPivot($demande->camion_id, ['statut' => 'inactif']);
+                    $demande->camion->update(['statut' => 'en_maintenance']); // Old truck goes to maintenance
+                }
+
+                // Attach new truck to franchisee
+                $demande->franchise->camions()->attach($camion->id, [
+                    'date_attribution' => now(),
+                    'statut' => 'actif' // Corrected to 'actif' for franchise_camion pivot
+                ]);
+                $camion->update(['statut' => 'en_utilisation']); // New truck goes to 'en_utilisation'
+            }
+
+            DB::commit();
+            return redirect()->route('admin.demandes-camions.show', $demande)->with('success', 'Demande de camion mise à jour avec succès.');
+        } catch (\Exception $e) {
+            DB::rollback();
+            return back()->with('error', 'Erreur lors de la mise à jour de la demande : ' . $e->getMessage());
+        }
     }
 
     public function demandesCamionsCreate(Request $request)

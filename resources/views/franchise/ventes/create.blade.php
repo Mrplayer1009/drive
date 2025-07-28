@@ -9,7 +9,7 @@
                 <h1 class="text-3xl font-bold text-black mb-2">Nouvelle Vente</h1>
                 <p class="text-black">Enregistrez une nouvelle vente</p>
             </div>
-            <a href="{{ route('franchise.ventes.index') }}" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition duration-300">
+            <a href="{{ route('franchise.ventes.index') }}" class="bg-gray-600 hover:bg-gray-700 text-black px-4 py-2 rounded-lg transition duration-300">
                 <i class="fas fa-arrow-left mr-2"></i>
                 Retour
             </a>
@@ -108,10 +108,10 @@
 
         <!-- Boutons d'action -->
         <div class="mt-6 flex justify-end space-x-4">
-            <a href="{{ route('franchise.ventes.index') }}" class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg transition duration-300">
+            <a href="{{ route('franchise.ventes.index') }}" class="bg-gray-600 hover:bg-gray-700 text-black px-6 py-2 rounded-lg transition duration-300">
                 Annuler
             </a>
-            <button type="submit" class="bg-orange-600 hover:bg-orange-700 text-white px-6 py-2 rounded-lg transition duration-300">
+            <button type="submit" class="bg-orange-600 hover:bg-orange-700 text-black px-6 py-2 rounded-lg transition duration-300">
                 <i class="fas fa-save mr-2"></i>
                 Enregistrer la vente
             </button>

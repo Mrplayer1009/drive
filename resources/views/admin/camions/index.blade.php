@@ -11,7 +11,7 @@
                 <h1 class="text-3xl font-bold text-black mb-2">Gestion des Camions</h1>
                 <p class="text-black">Gérez la flotte de camions Driv'n Cook</p>
             </div>
-            <a href="{{ route('admin.camions.create') }}" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg transition duration-300">
+            <a href="{{ route('admin.camions.create') }}" class="bg-orange-600 hover:bg-orange-700 text-black px-4 py-2 rounded-lg transition duration-300">
                 <i class="fas fa-plus mr-2"></i>
                 Nouveau camion
             </a>
@@ -52,11 +52,11 @@
                 <input type="number" id="annee" name="annee" value="{{ request('annee') }}" placeholder="Année..." class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500">
             </div>
             <div class="md:col-span-4 flex space-x-2">
-                <button type="submit" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg transition duration-300">
+                <button type="submit" class="bg-orange-600 hover:bg-orange-700 text-black px-4 py-2 rounded-lg transition duration-300">
                     <i class="fas fa-search mr-2"></i>
                     Filtrer
                 </button>
-                <a href="{{ route('admin.camions.index') }}" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition duration-300">
+                <a href="{{ route('admin.camions.index') }}" class="bg-gray-600 hover:bg-gray-700 text-black px-4 py-2 rounded-lg transition duration-300">
                     <i class="fas fa-times mr-2"></i>
                     Réinitialiser
                 </a>
@@ -103,14 +103,23 @@
                             @if($camion->franchise_actuel)
                                 <div class="flex items-center">
                                     <span class="text-black">{{ $camion->franchise_actuel->nom_complet }}</span>
-                                    <button onclick="openAssignModal({{ $camion->id }})" class="ml-2 text-blue-600 hover:text-blue-700 text-xs">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
+                                    <div class="ml-2 flex space-x-1">
+                                        <button onclick="openAssignModal({{ $camion->id }})" class="text-blue-600 hover:text-blue-700 text-xs" title="Modifier l'assignation">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <form action="{{ route('admin.camions.remove-franchise', $camion) }}" method="POST" class="inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="text-red-600 hover:text-red-700 text-xs" onclick="return confirm('Enlever ce franchisé du camion ?')" title="Enlever le franchisé">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </form>
+                                    </div>
                                 </div>
                             @else
                                 <div class="flex items-center">
                                     <span class="text-gray-500">Aucun franchisé</span>
-                                    <button onclick="openAssignModal({{ $camion->id }})" class="ml-2 text-green-600 hover:text-green-700 text-xs">
+                                    <button onclick="openAssignModal({{ $camion->id }})" class="ml-2 text-green-600 hover:text-green-700 text-xs" title="Assigner un franchisé">
                                         <i class="fas fa-plus"></i>
                                     </button>
                                 </div>
@@ -173,7 +182,7 @@
                 <div class="ml-5 w-0 flex-1">
                     <dl>
                         <dt class="text-sm font-medium text-black truncate">En service</dt>
-                        <dd class="text-lg font-medium text-black">{{ $stats['en_service'] ?? 0 }}</dd>
+                        <dd class="text-lg font-medium text-black">{{ $stats['en_utilisation'] ?? 0 }}</dd>
                     </dl>
                 </div>
             </div>
@@ -225,10 +234,10 @@
                         </select>
                     </div>
                     <div class="flex justify-end space-x-2">
-                        <button type="button" onclick="closeAssignModal()" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded text-sm">
+                        <button type="button" onclick="closeAssignModal()" class="bg-gray-600 hover:bg-gray-700 text-black px-4 py-2 rounded text-sm">
                             Annuler
                         </button>
-                        <button type="submit" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded text-sm">
+                        <button type="submit" class="bg-orange-600 hover:bg-orange-700 text-black px-4 py-2 rounded text-sm">
                             Assigner
                         </button>
                     </div>

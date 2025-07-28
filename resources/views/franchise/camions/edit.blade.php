@@ -11,7 +11,7 @@
                 <h1 class="text-3xl font-bold text-black mb-2">Modifier la Demande</h1>
                 <p class="text-black">Demande #{{ $demande->id ?? 'N/A' }}</p>
             </div>
-            <a href="{{ route('franchise.camions.index') }}" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition duration-300">
+            <a href="{{ route('franchise.camions.index') }}" class="bg-gray-600 hover:bg-gray-700 text-black px-4 py-2 rounded-lg transition duration-300">
                 <i class="fas fa-arrow-left mr-2"></i>
                 Retour
             </a>
@@ -83,10 +83,10 @@
                 </div>
 
                 <div class="flex justify-end space-x-4">
-                    <a href="{{ route('franchise.camions.index') }}" class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg transition duration-300">
+                    <a href="{{ route('franchise.camions.index') }}" class="bg-gray-600 hover:bg-gray-700 text-black px-6 py-2 rounded-lg transition duration-300">
                         Annuler
                     </a>
-                    <button type="submit" class="bg-orange-600 hover:bg-orange-700 text-white px-6 py-2 rounded-lg transition duration-300">
+                    <button type="submit" class="bg-orange-600 hover:bg-orange-700 text-black px-6 py-2 rounded-lg transition duration-300">
                         <i class="fas fa-save mr-2"></i>
                         Sauvegarder les modifications
                     </button>

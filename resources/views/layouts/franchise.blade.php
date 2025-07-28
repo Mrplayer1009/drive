@@ -25,7 +25,7 @@
                     <span class="text-black">{{ Auth::user()->nom_complet }}</span>
                     <form method="POST" action="{{ route('logout') }}" class="inline">
                         @csrf
-                        <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition duration-300">
+                        <button type="submit" class="bg-red-600 hover:bg-red-700 text-black px-4 py-2 rounded-lg transition duration-300">
                             <i class="fas fa-sign-out-alt mr-2"></i>
                             Déconnexion
                         </button>

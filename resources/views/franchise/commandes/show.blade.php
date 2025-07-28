@@ -13,12 +13,12 @@
             </div>
             <div class="flex items-center space-x-3">
                 @if($commande->statut === 'validee' || $commande->statut === 'livree')
-                <a href="{{ route('franchise.commandes.download', $commande) }}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition duration-300">
+                <a href="{{ route('franchise.commandes.download', $commande) }}" class="bg-green-600 hover:bg-green-700 text-black px-4 py-2 rounded-lg transition duration-300">
                     <i class="fas fa-download mr-2"></i>
                     Télécharger
                 </a>
                 @endif
-                <a href="{{ route('franchise.commandes.index') }}" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition duration-300">
+                <a href="{{ route('franchise.commandes.index') }}" class="bg-gray-600 hover:bg-gray-700 text-black px-4 py-2 rounded-lg transition duration-300">
                     <i class="fas fa-arrow-left mr-2"></i>
                     Retour
                 </a>

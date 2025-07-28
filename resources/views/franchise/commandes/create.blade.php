@@ -9,7 +9,7 @@
                 <h1 class="text-3xl font-bold text-black mb-2">Nouvelle Commande</h1>
                 <p class="text-black">Créez une nouvelle commande de stock</p>
             </div>
-            <a href="{{ route('franchise.commandes.index') }}" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition duration-300">
+            <a href="{{ route('franchise.commandes.index') }}" class="bg-gray-600 hover:bg-gray-700 text-black px-4 py-2 rounded-lg transition duration-300">
                 <i class="fas fa-arrow-left mr-2"></i>
                 Retour
             </a>
@@ -92,7 +92,7 @@
                                     <input type="number" step="0.01" readonly class="prix-total w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100">
                                 </div>
                                 <div class="col-span-2 flex items-end">
-                                    <button type="button" class="supprimer-produit bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-md transition duration-300">
+                                    <button type="button" class="supprimer-produit bg-red-600 hover:bg-red-700 text-black px-3 py-2 rounded-md transition duration-300">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </div>
@@ -101,7 +101,7 @@
                     </div>
 
                     <div class="mt-4">
-                        <button type="button" id="ajouter-produit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition duration-300">
+                        <button type="button" id="ajouter-produit" class="bg-green-600 hover:bg-green-700 text-black px-4 py-2 rounded-lg transition duration-300">
                             <i class="fas fa-plus mr-2"></i>
                             Ajouter un produit
                         </button>
@@ -131,10 +131,10 @@
 
         <!-- Boutons d'action -->
         <div class="mt-6 flex justify-end space-x-4">
-            <a href="{{ route('franchise.commandes.index') }}" class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg transition duration-300">
+            <a href="{{ route('franchise.commandes.index') }}" class="bg-gray-600 hover:bg-gray-700 text-black px-6 py-2 rounded-lg transition duration-300">
                 Annuler
             </a>
-            <button type="submit" class="bg-orange-600 hover:bg-orange-700 text-white px-6 py-2 rounded-lg transition duration-300">
+            <button type="submit" class="bg-orange-600 hover:bg-orange-700 text-black px-6 py-2 rounded-lg transition duration-300">
                 <i class="fas fa-save mr-2"></i>
                 Créer la commande
             </button>

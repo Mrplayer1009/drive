@@ -12,15 +12,15 @@
                 <p class="text-black">Vente #{{ $vente->id }} - {{ $vente->franchise->nom_complet }}</p>
             </div>
             <div class="flex space-x-2">
-                <a href="{{ route('admin.ventes.edit', $vente) }}" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg transition duration-300">
+                <a href="{{ route('admin.ventes.edit', $vente) }}" class="bg-orange-600 hover:bg-orange-700 text-black px-4 py-2 rounded-lg transition duration-300">
                     <i class="fas fa-edit mr-2"></i>
                     Modifier
                 </a>
-                <a href="{{ route('admin.ventes.download', $vente) }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition duration-300">
+                <a href="{{ route('admin.ventes.download', $vente) }}" class="bg-blue-600 hover:bg-blue-700 text-black px-4 py-2 rounded-lg transition duration-300">
                     <i class="fas fa-download mr-2"></i>
                     Télécharger PDF
                 </a>
-                <a href="{{ route('admin.ventes.index') }}" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition duration-300">
+                <a href="{{ route('admin.ventes.index') }}" class="bg-gray-600 hover:bg-gray-700 text-black px-4 py-2 rounded-lg transition duration-300">
                     <i class="fas fa-arrow-left mr-2"></i>
                     Retour
                 </a>

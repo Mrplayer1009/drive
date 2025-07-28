@@ -160,7 +160,7 @@
             <div class="flex items-center">
                 <div class="flex-shrink-0">
                     <div class="w-8 h-8 bg-yellow-500 rounded-md flex items-center justify-center">
-                        <i class="fas fa-exclamation-triangle text-white"></i>
+                        <i class="fas fa-exclamation-triangle text-black"></i>
                     </div>
                 </div>
                 <div class="ml-4">
@@ -174,7 +174,7 @@
             <div class="flex items-center">
                 <div class="flex-shrink-0">
                     <div class="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center">
-                        <i class="fas fa-tools text-white"></i>
+                        <i class="fas fa-tools text-black"></i>
                     </div>
                 </div>
                 <div class="ml-4">
@@ -188,7 +188,7 @@
             <div class="flex items-center">
                 <div class="flex-shrink-0">
                     <div class="w-8 h-8 bg-green-500 rounded-md flex items-center justify-center">
-                        <i class="fas fa-check text-white"></i>
+                        <i class="fas fa-check text-black"></i>
                     </div>
                 </div>
                 <div class="ml-4">
@@ -202,7 +202,7 @@
             <div class="flex items-center">
                 <div class="flex-shrink-0">
                     <div class="w-8 h-8 bg-red-500 rounded-md flex items-center justify-center">
-                        <i class="fas fa-exclamation-circle text-white"></i>
+                        <i class="fas fa-exclamation-circle text-black"></i>
                     </div>
                 </div>
                 <div class="ml-4">

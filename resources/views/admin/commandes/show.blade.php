@@ -12,20 +12,20 @@
                 <p class="text-black">Commande #{{ $commande->id }} - {{ $commande->franchise->nom_complet }}</p>
             </div>
             <div class="flex space-x-2">
-                <a href="{{ route('admin.commandes.edit', $commande) }}" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg transition duration-300">
+                <a href="{{ route('admin.commandes.edit', $commande) }}" class="bg-orange-600 hover:bg-orange-700 text-black px-4 py-2 rounded-lg transition duration-300">
                     <i class="fas fa-edit mr-2"></i>
                     Modifier
                 </a>
                 @if($commande->statut === 'en_attente')
                 <form action="{{ route('admin.commandes.validate', $commande) }}" method="POST" class="inline">
                     @csrf
-                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition duration-300">
+                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-black px-4 py-2 rounded-lg transition duration-300">
                         <i class="fas fa-check mr-2"></i>
                         Valider
                     </button>
                 </form>
                 @endif
-                <a href="{{ route('admin.commandes.index') }}" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition duration-300">
+                <a href="{{ route('admin.commandes.index') }}" class="bg-gray-600 hover:bg-gray-700 text-black px-4 py-2 rounded-lg transition duration-300">
                     <i class="fas fa-arrow-left mr-2"></i>
                     Retour
                 </a>

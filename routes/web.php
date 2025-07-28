@@ -50,6 +50,7 @@ Route::prefix('admin')->name('admin.')->middleware('auth:admin')->group(function
     Route::put('/camions/{camion}', [AdminController::class, 'camionsUpdate'])->name('camions.update');
     Route::delete('/camions/{camion}', [AdminController::class, 'camionsDestroy'])->name('camions.destroy');
     Route::post('/camions/{camion}/assign-franchise', [AdminController::class, 'camionsAssignFranchise'])->name('camions.assign-franchise');
+    Route::delete('/camions/{camion}/remove-franchise', [AdminController::class, 'camionsRemoveFranchise'])->name('camions.remove-franchise');
     
     // Gestion des ventes
     Route::get('/ventes', [AdminController::class, 'ventes'])->name('ventes.index');

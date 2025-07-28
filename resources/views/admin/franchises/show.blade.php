@@ -12,11 +12,11 @@
                 <p class="text-black">{{ $franchise->nom_complet }}</p>
             </div>
             <div class="flex space-x-2">
-                <a href="{{ route('admin.franchises.edit', $franchise) }}" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg transition duration-300">
+                <a href="{{ route('admin.franchises.edit', $franchise) }}" class="bg-orange-600 hover:bg-orange-700 text-black px-4 py-2 rounded-lg transition duration-300">
                     <i class="fas fa-edit mr-2"></i>
                     Modifier
                 </a>
-                <a href="{{ route('admin.franchises.index') }}" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition duration-300">
+                <a href="{{ route('admin.franchises.index') }}" class="bg-gray-600 hover:bg-gray-700 text-black px-4 py-2 rounded-lg transition duration-300">
                     <i class="fas fa-arrow-left mr-2"></i>
                     Retour
                 </a>
@@ -73,7 +73,7 @@
             <div class="bg-white shadow rounded-lg p-6 mt-6">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-lg font-medium text-black">Camions attribués</h3>
-                    <button onclick="openAssignModal()" class="bg-orange-600 hover:bg-orange-700 text-white px-3 py-1 rounded text-sm">
+                    <button onclick="openAssignModal()" class="bg-orange-600 hover:bg-orange-700 text-black px-3 py-1 rounded text-sm">
                         <i class="fas fa-plus mr-1"></i>
                         Assigner un camion
                     </button>
@@ -126,10 +126,10 @@
                                 </select>
                             </div>
                             <div class="flex justify-end space-x-2">
-                                <button type="button" onclick="closeAssignModal()" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded text-sm">
+                                <button type="button" onclick="closeAssignModal()" class="bg-gray-600 hover:bg-gray-700 text-black px-4 py-2 rounded text-sm">
                                     Annuler
                                 </button>
-                                <button type="submit" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded text-sm">
+                                <button type="submit" class="bg-orange-600 hover:bg-orange-700 text-black px-4 py-2 rounded text-sm">
                                     Assigner
                                 </button>
                             </div>

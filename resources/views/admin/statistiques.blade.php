@@ -12,11 +12,11 @@
                 <p class="text-black">Vue d'ensemble des performances Driv'n Cook</p>
             </div>
             <div class="flex space-x-2">
-                <button class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg transition duration-300">
+                <button class="bg-orange-600 hover:bg-orange-700 text-black px-4 py-2 rounded-lg transition duration-300">
                     <i class="fas fa-download mr-2"></i>
                     Exporter PDF
                 </button>
-                <button class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition duration-300">
+                <button class="bg-green-600 hover:bg-green-700 text-black px-4 py-2 rounded-lg transition duration-300">
                     <i class="fas fa-chart-bar mr-2"></i>
                     Générer rapport
                 </button>
@@ -30,7 +30,7 @@
             <div class="flex items-center">
                 <div class="flex-shrink-0">
                     <div class="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center">
-                        <i class="fas fa-users text-white"></i>
+                        <i class="fas fa-users text-black"></i>
                     </div>
                 </div>
                 <div class="ml-4">
@@ -45,7 +45,7 @@
             <div class="flex items-center">
                 <div class="flex-shrink-0">
                     <div class="w-8 h-8 bg-orange-500 rounded-md flex items-center justify-center">
-                        <i class="fas fa-euro-sign text-white"></i>
+                        <i class="fas fa-euro-sign text-black"></i>
                     </div>
                 </div>
                 <div class="ml-4">
@@ -60,7 +60,7 @@
             <div class="flex items-center">
                 <div class="flex-shrink-0">
                     <div class="w-8 h-8 bg-green-500 rounded-md flex items-center justify-center">
-                        <i class="fas fa-chart-line text-white"></i>
+                        <i class="fas fa-chart-line text-black"></i>
                     </div>
                 </div>
                 <div class="ml-4">
@@ -75,7 +75,7 @@
             <div class="flex items-center">
                 <div class="flex-shrink-0">
                     <div class="w-8 h-8 bg-purple-500 rounded-md flex items-center justify-center">
-                        <i class="fas fa-shopping-cart text-white"></i>
+                        <i class="fas fa-shopping-cart text-black"></i>
                     </div>
                 </div>
                 <div class="ml-4">
@@ -201,21 +201,21 @@
             <div class="p-4 border border-gray-200 rounded-lg">
                 <h4 class="font-medium text-black mb-2">Rapport mensuel</h4>
                 <p class="text-sm text-black mb-3">Analyse complète des performances du mois</p>
-                <button class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">
+                <button class="bg-blue-600 hover:bg-blue-700 text-black px-3 py-1 rounded text-sm">
                     Générer
                 </button>
             </div>
             <div class="p-4 border border-gray-200 rounded-lg">
                 <h4 class="font-medium text-black mb-2">Rapport trimestriel</h4>
                 <p class="text-sm text-black mb-3">Bilan trimestriel avec projections</p>
-                <button class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">
+                <button class="bg-green-600 hover:bg-green-700 text-black px-3 py-1 rounded text-sm">
                     Générer
                 </button>
             </div>
             <div class="p-4 border border-gray-200 rounded-lg">
                 <h4 class="font-medium text-black mb-2">Rapport annuel</h4>
                 <p class="text-sm text-black mb-3">Rapport complet de l'année</p>
-                <button class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-sm">
+                <button class="bg-purple-600 hover:bg-purple-700 text-black px-3 py-1 rounded text-sm">
                     Générer
                 </button>
             </div>

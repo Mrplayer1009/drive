@@ -57,7 +57,7 @@
                 <i class="fas fa-filter mr-2"></i>
                 Appliquer les filtres
             </button>
-            <a href="{{ route('franchise.ventes.index') }}" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition duration-300">
+            <a href="{{ route('franchise.ventes.index') }}" class="bg-gray-600 hover:bg-gray-700 text-black px-4 py-2 rounded-lg transition duration-300">
                 <i class="fas fa-times mr-2"></i>
                 Effacer les filtres
             </a>
@@ -131,7 +131,7 @@
             <div class="flex items-center">
                 <div class="flex-shrink-0">
                     <div class="w-8 h-8 bg-orange-500 rounded-md flex items-center justify-center">
-                        <i class="fas fa-euro-sign text-white"></i>
+                        <i class="fas fa-euro-sign text-black"></i>
                     </div>
                 </div>
                 <div class="ml-4">
@@ -145,7 +145,7 @@
             <div class="flex items-center">
                 <div class="flex-shrink-0">
                     <div class="w-8 h-8 bg-green-500 rounded-md flex items-center justify-center">
-                        <i class="fas fa-chart-line text-white"></i>
+                        <i class="fas fa-chart-line text-black"></i>
                     </div>
                 </div>
                 <div class="ml-4">
@@ -173,7 +173,7 @@
             <div class="flex items-center">
                 <div class="flex-shrink-0">
                     <div class="w-8 h-8 bg-purple-500 rounded-md flex items-center justify-center">
-                        <i class="fas fa-percentage text-white"></i>
+                        <i class="fas fa-percentage text-black"></i>
                     </div>
                 </div>
                 <div class="ml-4">

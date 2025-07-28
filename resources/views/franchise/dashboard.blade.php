@@ -14,7 +14,7 @@
             <div class="flex items-center">
                 <div class="flex-shrink-0">
                     <div class="w-8 h-8 bg-orange-500 rounded-md flex items-center justify-center">
-                        <i class="fas fa-euro-sign text-white"></i>
+                        <i class="fas fa-euro-sign text-black"></i>
                     </div>
                 </div>
                 <div class="ml-4">
@@ -29,7 +29,7 @@
             <div class="flex items-center">
                 <div class="flex-shrink-0">
                     <div class="w-8 h-8 bg-green-500 rounded-md flex items-center justify-center">
-                        <i class="fas fa-truck text-white"></i>
+                        <i class="fas fa-truck text-black"></i>
                     </div>
                 </div>
                 <div class="ml-4">
@@ -44,7 +44,7 @@
             <div class="flex items-center">
                 <div class="flex-shrink-0">
                     <div class="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center">
-                        <i class="fas fa-shopping-cart text-white"></i>
+                        <i class="fas fa-shopping-cart text-black"></i>
                     </div>
                 </div>
                 <div class="ml-4">
@@ -59,7 +59,7 @@
             <div class="flex items-center">
                 <div class="flex-shrink-0">
                     <div class="w-8 h-8 bg-purple-500 rounded-md flex items-center justify-center">
-                        <i class="fas fa-chart-line text-white"></i>
+                        <i class="fas fa-chart-line text-black"></i>
                     </div>
                 </div>
                 <div class="ml-4">

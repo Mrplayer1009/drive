@@ -18,7 +18,7 @@ return new class extends Migration
 
         Schema::table('franchise_camion', function (Blueprint $table) {
             // Ajouter le nouvel enum avec les bonnes valeurs
-            $table->enum('statut', ['actif', 'inactif', 'en_service', 'en_maintenance'])->default('actif')->after('date_fin');
+            $table->enum('statut', ['actif', 'inactif', 'en_utilisation', 'en_maintenance'])->default('actif')->after('date_fin');
         });
     }
 
