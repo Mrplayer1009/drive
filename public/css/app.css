@@ -1,0 +1,128 @@
+/* Styles personnalisés pour Driv'n Cook */
+
+/* Assurer que le background est visible */
+body {
+    background-color: #f3f4f6 !important;
+    min-height: 100vh;
+}
+
+/* Assurer que les boutons sont visibles */
+.btn-primary {
+    background-color: #ea580c !important;
+    color: white !important;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    transition: background-color 0.3s;
+}
+
+.btn-primary:hover {
+    background-color: #c2410c !important;
+}
+
+.btn-secondary {
+    background-color: #6b7280 !important;
+    color: white !important;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    transition: background-color 0.3s;
+}
+
+.btn-secondary:hover {
+    background-color: #4b5563 !important;
+}
+
+.btn-danger {
+    background-color: #dc2626 !important;
+    color: white !important;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    transition: background-color 0.3s;
+}
+
+.btn-danger:hover {
+    background-color: #b91c1c !important;
+}
+
+.btn-success {
+    background-color: #059669 !important;
+    color: white !important;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    transition: background-color 0.3s;
+}
+
+.btn-success:hover {
+    background-color: #047857 !important;
+}
+
+/* Assurer que le texte est noir par défaut */
+.text-black {
+    color: #000000 !important;
+}
+
+/* Assurer que les cartes ont un fond blanc */
+.bg-white {
+    background-color: #ffffff !important;
+}
+
+/* Assurer que les liens sont visibles */
+a {
+    color: #ea580c !important;
+}
+
+a:hover {
+    color: #c2410c !important;
+}
+
+/* Assurer que les icônes sont visibles */
+.fas, .far, .fab {
+    color: inherit !important;
+}
+
+/* Assurer que les tableaux sont lisibles */
+table {
+    background-color: #ffffff !important;
+}
+
+th, td {
+    color: #000000 !important;
+}
+
+/* Assurer que les formulaires sont visibles */
+input, select, textarea {
+    color: #000000 !important;
+    background-color: #ffffff !important;
+}
+
+/* Assurer que les badges sont visibles */
+.badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+/* Assurer que les alertes sont visibles */
+.alert-success {
+    background-color: #d1fae5 !important;
+    border-color: #10b981 !important;
+    color: #065f46 !important;
+}
+
+.alert-error {
+    background-color: #fee2e2 !important;
+    border-color: #ef4444 !important;
+    color: #991b1b !important;
+}
+
+.alert-warning {
+    background-color: #fef3c7 !important;
+    border-color: #f59e0b !important;
+    color: #92400e !important;
+}
+
+.alert-info {
+    background-color: #dbeafe !important;
+    border-color: #3b82f6 !important;
+    color: #1e40af !important;
+} 
