@@ -4,11 +4,20 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\FranchiseController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Admin\StockEntrepotController;
+use App\Http\Controllers\Admin\StockFranchiseController;
+use App\Http\Controllers\TestPdfController;
 
 // Route d'accueil
 Route::get('/', function () {
     return view('welcome');
 });
+
+// Routes de test PDF
+Route::get('/test-pdf', [TestPdfController::class, 'test'])->name('test.pdf');
+Route::get('/test-pdf-commande/{id?}', [TestPdfController::class, 'testCommande'])->name('test.pdf.commande');
+Route::get('/test-pdf-commande-download/{id?}', [TestPdfController::class, 'testCommandeDownload'])->name('test.pdf.commande.download');
+Route::get('/test-pdf-minimal', [TestPdfController::class, 'testMinimal'])->name('test.pdf.minimal');
 
 // Routes d'authentification
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -71,6 +80,9 @@ Route::prefix('admin')->name('admin.')->middleware('auth:admin')->group(function
     Route::put('/commandes/{commande}', [AdminController::class, 'commandesUpdate'])->name('commandes.update');
     Route::delete('/commandes/{commande}', [AdminController::class, 'commandesDestroy'])->name('commandes.destroy');
     Route::post('/commandes/{commande}/validate', [AdminController::class, 'commandesValidate'])->name('commandes.validate');
+    Route::post('/commandes/{commande}/refuse', [AdminController::class, 'commandesRefuse'])->name('commandes.refuse');
+    Route::post('/commandes/{commande}/deliver', [AdminController::class, 'commandesDeliver'])->name('commandes.deliver');
+    Route::get('/commandes/{commande}/download', [AdminController::class, 'commandesDownload'])->name('commandes.download');
     
     // Gestion des produits
     Route::get('/produits', [AdminController::class, 'produits'])->name('produits.index');
@@ -97,6 +109,30 @@ Route::prefix('admin')->name('admin.')->middleware('auth:admin')->group(function
     Route::get('/demandes-camions/{demande}', [AdminController::class, 'demandesCamionsShow'])->name('demandes-camions.show');
     Route::get('/demandes-camions/{demande}/edit', [AdminController::class, 'demandesCamionsEdit'])->name('demandes-camions.edit');
     Route::put('/demandes-camions/{demande}', [AdminController::class, 'demandesCamionsUpdate'])->name('demandes-camions.update');
+    
+    // Gestion des stocks d'entrepôt
+    Route::get('/entrepots/{entrepot}/stocks', [StockEntrepotController::class, 'index'])->name('entrepots.stocks.index');
+    Route::get('/entrepots/{entrepot}/stocks/create', [StockEntrepotController::class, 'create'])->name('entrepots.stocks.create');
+    Route::post('/entrepots/{entrepot}/stocks', [StockEntrepotController::class, 'store'])->name('entrepots.stocks.store');
+    Route::get('/entrepots/{entrepot}/stocks/{stock}/edit', [StockEntrepotController::class, 'edit'])->name('entrepots.stocks.edit');
+    Route::put('/entrepots/{entrepot}/stocks/{stock}', [StockEntrepotController::class, 'update'])->name('entrepots.stocks.update');
+    Route::get('/entrepots/{entrepot}/stocks/produit/{produit}', [StockEntrepotController::class, 'show'])->name('entrepots.stocks.show');
+    Route::post('/entrepots/{entrepot}/stocks/produit/{produit}/ajouter', [StockEntrepotController::class, 'ajouterStock'])->name('entrepots.stocks.ajouter');
+    Route::post('/entrepots/{entrepot}/stocks/produit/{produit}/retirer', [StockEntrepotController::class, 'retirerStock'])->name('entrepots.stocks.retirer');
+    
+    // Gestion des stocks de franchise
+    Route::get('/franchises/{franchise}/stocks', [StockFranchiseController::class, 'index'])->name('franchises.stocks.index');
+    Route::get('/franchises/{franchise}/stocks/create', [StockFranchiseController::class, 'create'])->name('franchises.stocks.create');
+    Route::post('/franchises/{franchise}/stocks', [StockFranchiseController::class, 'store'])->name('franchises.stocks.store');
+    Route::get('/franchises/{franchise}/stocks/{stock}/edit', [StockFranchiseController::class, 'edit'])->name('franchises.stocks.edit');
+    Route::put('/franchises/{franchise}/stocks/{stock}', [StockFranchiseController::class, 'update'])->name('franchises.stocks.update');
+    Route::get('/franchises/{franchise}/stocks/produit/{produit}', [StockFranchiseController::class, 'show'])->name('franchises.stocks.show');
+    Route::post('/franchises/{franchise}/stocks/produit/{produit}/ajouter', [StockFranchiseController::class, 'ajouterStock'])->name('franchises.stocks.ajouter');
+    Route::post('/franchises/{franchise}/stocks/produit/{produit}/retirer', [StockFranchiseController::class, 'retirerStock'])->name('franchises.stocks.retirer');
+    
+    // Alertes de stock
+    Route::get('/stocks/alertes-entrepots', [StockEntrepotController::class, 'alertes'])->name('stocks.alertes-entrepots');
+    Route::get('/stocks/alertes-franchises', [StockFranchiseController::class, 'alertes'])->name('stocks.alertes-franchises');
 });
 
 // Routes Franchise (Front-office)

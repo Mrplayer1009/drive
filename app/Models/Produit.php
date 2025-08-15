@@ -32,6 +32,17 @@ class Produit extends Model
                     ->withTimestamps();
     }
 
+    // Relations avec les stocks
+    public function stocksEntrepots()
+    {
+        return $this->hasMany(EntrepotProduitStock::class);
+    }
+
+    public function stocksFranchises()
+    {
+        return $this->hasMany(FranchiseProduitStock::class);
+    }
+
     // Méthodes utilitaires
     public function getPrixFormateAttribute()
     {
@@ -41,11 +52,32 @@ class Produit extends Model
     public function getCategorieLabelAttribute()
     {
         $labels = [
-            'ingredient' => 'Ingrédient',
-            'plat' => 'Plat',
-            'boisson' => 'Boisson',
+            'ingredients' => 'Ingrédients',
+            'plats' => 'Plats',
+            'boissons' => 'Boissons',
         ];
         
         return $labels[$this->categorie] ?? $this->categorie;
+    }
+
+    // Méthodes pour gérer les stocks
+    public function getStockEntrepot($entrepotId)
+    {
+        return $this->stocksEntrepots()->where('entrepot_id', $entrepotId)->first();
+    }
+
+    public function getStockFranchise($franchiseId)
+    {
+        return $this->stocksFranchises()->where('franchise_id', $franchiseId)->first();
+    }
+
+    public function getStockTotalEntrepots()
+    {
+        return $this->stocksEntrepots()->sum('quantite_stock');
+    }
+
+    public function getStockTotalFranchises()
+    {
+        return $this->stocksFranchises()->sum('quantite_stock');
     }
 } 

@@ -61,11 +61,14 @@
             </div>
 
             <div class="mt-4 flex space-x-2">
-                <a href="{{ route('admin.entrepots.edit', $entrepot) }}" class="text-orange-600 hover:text-orange-700">
+                <a href="{{ route('admin.entrepots.edit', $entrepot) }}" class="text-orange-600 hover:text-orange-700" title="Modifier">
                     <i class="fas fa-edit"></i>
                 </a>
-                <a href="{{ route('admin.entrepots.show', $entrepot) }}" class="text-blue-600 hover:text-blue-700">
+                <a href="{{ route('admin.entrepots.show', $entrepot) }}" class="text-blue-600 hover:text-blue-700" title="Voir">
                     <i class="fas fa-eye"></i>
+                </a>
+                <a href="{{ route('admin.entrepots.stocks.index', $entrepot) }}" class="text-green-600 hover:text-green-700" title="Gérer les stocks">
+                    <i class="fas fa-boxes"></i>
                 </a>
             </div>
         </div>

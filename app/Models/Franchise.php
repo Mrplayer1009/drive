@@ -64,6 +64,19 @@ class Franchise extends Authenticatable
         return $this->hasMany(NotificationPanne::class);
     }
 
+    // Relations avec les stocks
+    public function stocksProduits()
+    {
+        return $this->hasMany(FranchiseProduitStock::class);
+    }
+
+    public function produits()
+    {
+        return $this->belongsToMany(Produit::class, 'franchise_produit_stocks')
+                    ->withPivot('quantite_stock', 'stock_minimum')
+                    ->withTimestamps();
+    }
+
     // Méthodes utilitaires
     public function getNomCompletAttribute()
     {
@@ -97,5 +110,52 @@ class Franchise extends Authenticatable
         }
         
         return $query->sum('montant_reverse');
+    }
+
+    // Méthodes pour gérer les stocks
+    public function getStockProduit($produitId)
+    {
+        return $this->stocksProduits()->where('produit_id', $produitId)->first();
+    }
+
+    public function getStockTotal()
+    {
+        return $this->stocksProduits()->sum('quantite_stock');
+    }
+
+    public function getProduitsEnRupture()
+    {
+        return $this->stocksProduits()->where('quantite_stock', '<=', 0)->with('produit')->get();
+    }
+
+    public function getProduitsStockInsuffisant()
+    {
+        return $this->stocksProduits()
+                    ->whereRaw('quantite_stock <= stock_minimum')
+                    ->where('quantite_stock', '>', 0)
+                    ->with('produit')
+                    ->get();
+    }
+
+    public function ajouterStockProduit($produitId, $quantite, $stockMinimum = 0)
+    {
+        $stock = $this->stocksProduits()->firstOrCreate(
+            ['produit_id' => $produitId],
+            ['quantite_stock' => 0, 'stock_minimum' => $stockMinimum]
+        );
+
+        $stock->ajouterStock($quantite);
+        return $stock;
+    }
+
+    public function retirerStockProduit($produitId, $quantite)
+    {
+        $stock = $this->getStockProduit($produitId);
+        
+        if ($stock) {
+            return $stock->retirerStock($quantite);
+        }
+        
+        return false;
     }
 } 

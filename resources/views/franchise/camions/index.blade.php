@@ -4,8 +4,16 @@
 <div class="p-6">
     <!-- En-tête -->
     <div class="bg-white shadow rounded-lg p-6 mb-6">
-        <h1 class="text-3xl font-bold text-black mb-2">Mes Camions</h1>
-        <p class="text-black">Consultez vos camions attribués</p>
+        <div class="flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold text-black mb-2">Mes Camions</h1>
+                <p class="text-black">Consultez vos camions attribués</p>
+            </div>
+            <a href="{{ route('franchise.camions.create') }}" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg transition duration-300">
+                <i class="fas fa-plus mr-2"></i>
+                Demander un camion
+            </a>
+        </div>
     </div>
 
     @if($camions->count() > 0)
@@ -88,7 +96,11 @@
                 <i class="fas fa-truck text-gray-400 text-2xl"></i>
             </div>
             <h3 class="text-lg font-medium text-black mb-2">Aucun camion attribué</h3>
-            <p class="text-black">Vous n'avez pas encore de camion attribué. Contactez l'administrateur pour en obtenir un.</p>
+            <p class="text-black mb-4">Vous n'avez pas encore de camion attribué. Demandez-en un maintenant !</p>
+            <a href="{{ route('franchise.camions.create') }}" class="inline-flex items-center bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-lg transition duration-300">
+                <i class="fas fa-plus mr-2"></i>
+                Demander un camion
+            </a>
         </div>
     @endif
 

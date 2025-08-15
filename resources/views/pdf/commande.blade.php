@@ -37,17 +37,15 @@
             margin-bottom: 30px;
         }
         .info-grid {
-            display: table;
             width: 100%;
             border-collapse: collapse;
         }
         .info-row {
-            display: table-row;
+            border-bottom: 1px solid #eee;
         }
         .info-cell {
-            display: table-cell;
             padding: 8px;
-            border-bottom: 1px solid #eee;
+            vertical-align: top;
         }
         .info-label {
             font-weight: bold;
@@ -105,11 +103,9 @@
             font-size: 10px;
             font-weight: bold;
             text-transform: uppercase;
+            background-color: #f8f9fa;
+            color: #495057;
         }
-        .status-en_attente { background-color: #fff3cd; color: #856404; }
-        .status-validee { background-color: #d1ecf1; color: #0c5460; }
-        .status-livree { background-color: #d4edda; color: #155724; }
-        .status-annulee { background-color: #f8d7da; color: #721c24; }
     </style>
 </head>
 <body>
@@ -120,34 +116,34 @@
     </div>
 
     <div class="info-section">
-        <div class="info-grid">
-            <div class="info-row">
-                <div class="info-cell info-label">Franchisé :</div>
-                <div class="info-cell info-value">{{ $commande->franchise->nom_complet }}</div>
-            </div>
-            <div class="info-row">
-                <div class="info-cell info-label">Entrepôt :</div>
-                <div class="info-cell info-value">{{ $commande->entrepot->nom }} - {{ $commande->entrepot->ville }}</div>
-            </div>
-            <div class="info-row">
-                <div class="info-cell info-label">Date de commande :</div>
-                <div class="info-cell info-value">{{ \Carbon\Carbon::parse($commande->date_commande)->format('d/m/Y H:i') }}</div>
-            </div>
-            <div class="info-row">
-                <div class="info-cell info-label">Statut :</div>
-                <div class="info-cell info-value">
-                    <span class="status-badge status-{{ $commande->statut }}">
+        <table class="info-grid">
+            <tr class="info-row">
+                <td class="info-cell info-label">Franchisé :</td>
+                <td class="info-cell info-value">{{ $commande->franchise->nom }} {{ $commande->franchise->prenom }}</td>
+            </tr>
+            <tr class="info-row">
+                <td class="info-cell info-label">Entrepôt :</td>
+                <td class="info-cell info-value">{{ $commande->entrepot->nom }} - {{ $commande->entrepot->ville }}</td>
+            </tr>
+            <tr class="info-row">
+                <td class="info-cell info-label">Date de commande :</td>
+                <td class="info-cell info-value">{{ \Carbon\Carbon::parse($commande->date_commande)->format('d/m/Y H:i') }}</td>
+            </tr>
+            <tr class="info-row">
+                <td class="info-cell info-label">Statut :</td>
+                <td class="info-cell info-value">
+                    <span class="status-badge">
                         {{ ucfirst(str_replace('_', ' ', $commande->statut)) }}
                     </span>
-                </div>
-            </div>
+                </td>
+            </tr>
             @if($commande->notes)
-            <div class="info-row">
-                <div class="info-cell info-label">Notes :</div>
-                <div class="info-cell info-value">{{ $commande->notes }}</div>
-            </div>
+            <tr class="info-row">
+                <td class="info-cell info-label">Notes :</td>
+                <td class="info-cell info-value">{{ $commande->notes }}</td>
+            </tr>
             @endif
-        </div>
+        </table>
     </div>
 
     @if($commande->produits->count() > 0)
@@ -168,7 +164,7 @@
                 @foreach($commande->produits as $produit)
                 <tr>
                     <td>{{ $produit->nom }}</td>
-                    <td>{{ $produit->categorie_label }}</td>
+                    <td>{{ ucfirst($produit->categorie) }}</td>
                     <td>{{ $produit->pivot->quantite ?? 0 }} {{ $produit->unite_mesure }}</td>
                     <td>{{ number_format($produit->pivot->prix_unitaire ?? 0, 2, ',', ' ') }} €</td>
                     <td>{{ number_format($produit->pivot->prix_total ?? 0, 2, ',', ' ') }} €</td>

@@ -10,6 +10,9 @@ use App\Models\Commande;
 use App\Models\Produit;
 use App\Models\DemandeCamion;
 use App\Models\NotificationPanne;
+use App\Models\EntrepotProduitStock;
+use App\Models\FranchiseProduitStock;
+use App\Services\StockService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -20,6 +23,8 @@ class AdminController extends Controller
 {
     public function dashboard()
     {
+        $stockService = app(StockService::class);
+        
         $stats = [
             'total_franchises' => Franchise::count(),
             'total_camions' => Camion::count(),
@@ -38,6 +43,11 @@ class AdminController extends Controller
             'total_reverse_mois' => Vente::whereMonth('date_vente', now()->month)->sum('montant_reverse'),
             'notifications_pannes' => NotificationPanne::where('statut', 'signalee')->count(),
             'demandes_camions' => DemandeCamion::where('statut', 'en_attente')->count(),
+            // Statistiques de stock
+            'produits_en_rupture_entrepots' => EntrepotProduitStock::where('quantite_stock', '<=', 0)->count(),
+            'produits_stock_insuffisant_entrepots' => EntrepotProduitStock::whereRaw('quantite_stock <= stock_minimum')->where('quantite_stock', '>', 0)->count(),
+            'produits_en_rupture_franchises' => FranchiseProduitStock::where('quantite_stock', '<=', 0)->count(),
+            'produits_stock_insuffisant_franchises' => FranchiseProduitStock::whereRaw('quantite_stock <= stock_minimum')->where('quantite_stock', '>', 0)->count(),
         ];
 
         $ventes_recentes = Vente::with('franchise')->latest()->take(5)->get();
@@ -190,7 +200,10 @@ class AdminController extends Controller
 
     public function entrepotsShow(Entrepot $entrepot)
     {
-        return view('admin.entrepots.show', compact('entrepot'));
+        // Charger les stocks de produits de l'entrepôt
+        $stocks = $entrepot->stocksProduits()->with('produit')->get();
+        
+        return view('admin.entrepots.show', compact('entrepot', 'stocks'));
     }
 
     public function entrepotsEdit(Entrepot $entrepot)
@@ -514,6 +527,44 @@ class AdminController extends Controller
     {
         $commande->update(['statut' => 'validee']);
         return redirect()->route('admin.commandes.index')->with('success', 'Commande validée avec succès');
+    }
+
+    public function commandesRefuse(Request $request, Commande $commande)
+    {
+        $commande->update([
+            'statut' => 'refusee',
+        ]);
+
+        return redirect()->route('admin.commandes.index')->with('success', 'Commande refusée avec succès');
+    }
+
+    public function commandesDeliver(Commande $commande)
+    {
+        $commande->update(['statut' => 'livree']);
+        return redirect()->route('admin.commandes.index')->with('success', 'Commande marquée comme livrée');
+    }
+
+    public function commandesDownload(Commande $commande)
+    {
+        try {
+            // Charger les relations nécessaires
+            $commande->load(['franchise', 'entrepot', 'produits']);
+            
+            // Vérifier que les données nécessaires existent
+            if (!$commande->franchise || !$commande->entrepot) {
+                throw new \Exception('Données manquantes pour générer le PDF');
+            }
+            
+            // Générer le PDF directement pour téléchargement
+            $pdf = Pdf::loadView('pdf.commande-minimal', compact('commande'));
+            $pdf->setPaper('A4', 'portrait');
+            
+            return $pdf->download('commande_' . $commande->id . '.pdf');
+        } catch (\Exception $e) {
+            \Log::error('Erreur génération PDF commande ' . $commande->id . ': ' . $e->getMessage());
+            return redirect()->route('admin.commandes.show', $commande)
+                ->with('error', 'Erreur lors de la génération du PDF: ' . $e->getMessage());
+        }
     }
 
     public function produits()

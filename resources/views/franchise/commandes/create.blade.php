@@ -16,8 +16,30 @@
         </div>
     </div>
 
-    <form action="{{ route('franchise.commandes.store') }}" method="POST">
+    <form action="{{ route('franchise.commandes.store') }}" method="POST" id="commande-form">
         @csrf
+        
+        @if($errors->any())
+            <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-exclamation-triangle text-red-400"></i>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-red-800">
+                            Erreurs de validation
+                        </h3>
+                        <div class="mt-2 text-sm text-red-700">
+                            <ul class="list-disc pl-5 space-y-1">
+                                @foreach($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
         
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Informations de la commande -->
@@ -44,12 +66,30 @@
                         <div class="p-4 bg-orange-50 rounded-lg border border-orange-200">
                             <h4 class="text-sm font-medium text-black mb-2">
                                 <i class="fas fa-info-circle text-orange-600 mr-1"></i>
-                                Règle 80/20
+                                Règle 80/20 <span class="text-red-600 font-bold">*OBLIGATOIRE*</span>
                             </h4>
                             <div class="text-xs text-black space-y-1">
-                                <p>• 80% de produits obligatoires</p>
-                                <p>• 20% de produits au choix</p>
+                                <p>• <strong>80% minimum</strong> de produits obligatoires</p>
+                                <p>• 20% maximum de produits au choix</p>
                                 <p>• Les produits marqués "Obligatoire" sont imposés</p>
+                                <p class="text-red-600 font-bold">• La commande ne peut pas être validée si cette règle n'est pas respectée</p>
+                            </div>
+                        </div>
+
+                        <!-- Indicateur de respect de la règle 80/20 -->
+                        <div id="regle-indicator" class="p-3 rounded-lg border hidden">
+                            <div class="flex items-center">
+                                <i id="regle-icon" class="fas fa-circle text-lg mr-2"></i>
+                                <span id="regle-text" class="text-sm font-medium"></span>
+                            </div>
+                            <div class="mt-2">
+                                <div class="flex justify-between text-xs">
+                                    <span>Obligatoire: <span id="pourcentage-obligatoire">0%</span></span>
+                                    <span>Libre: <span id="pourcentage-libre">0%</span></span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2 mt-1">
+                                    <div id="progress-bar" class="bg-green-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -134,7 +174,7 @@
             <a href="{{ route('franchise.commandes.index') }}" class="bg-gray-600 hover:bg-gray-700 text-black px-6 py-2 rounded-lg transition duration-300">
                 Annuler
             </a>
-            <button type="submit" class="bg-orange-600 hover:bg-orange-700 text-black px-6 py-2 rounded-lg transition duration-300">
+            <button type="submit" id="submit-btn" class="bg-orange-600 hover:bg-orange-700 text-black px-6 py-2 rounded-lg transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed">
                 <i class="fas fa-save mr-2"></i>
                 Créer la commande
             </button>
@@ -178,11 +218,12 @@ document.addEventListener('DOMContentLoaded', function() {
             if (produits.length > 1) {
                 e.target.closest('.produit-item').remove();
                 calculerTotaux();
+                verifierRegle8020();
             }
         }
     });
 
-    // Calculer les totaux
+    // Calculer les totaux et vérifier la règle 80/20
     function calculerTotaux() {
         let totalObligatoire = 0;
         let totalLibre = 0;
@@ -205,6 +246,54 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('total-obligatoire').textContent = totalObligatoire.toFixed(2) + ' €';
         document.getElementById('total-libre').textContent = totalLibre.toFixed(2) + ' €';
         document.getElementById('total-general').textContent = (totalObligatoire + totalLibre).toFixed(2) + ' €';
+        
+        return { totalObligatoire, totalLibre };
+    }
+
+    // Vérifier la règle 80/20
+    function verifierRegle8020() {
+        const { totalObligatoire, totalLibre } = calculerTotaux();
+        const totalGeneral = totalObligatoire + totalLibre;
+        
+        if (totalGeneral === 0) {
+            document.getElementById('regle-indicator').classList.add('hidden');
+            return false;
+        }
+        
+        const pourcentageObligatoire = (totalObligatoire / totalGeneral) * 100;
+        const pourcentageLibre = (totalLibre / totalGeneral) * 100;
+        
+        document.getElementById('regle-indicator').classList.remove('hidden');
+        document.getElementById('pourcentage-obligatoire').textContent = pourcentageObligatoire.toFixed(1) + '%';
+        document.getElementById('pourcentage-libre').textContent = pourcentageLibre.toFixed(1) + '%';
+        document.getElementById('progress-bar').style.width = pourcentageObligatoire + '%';
+        
+        const submitBtn = document.getElementById('submit-btn');
+        const regleIcon = document.getElementById('regle-icon');
+        const regleText = document.getElementById('regle-text');
+        const indicator = document.getElementById('regle-indicator');
+        
+        if (pourcentageObligatoire >= 80) {
+            // Règle respectée
+            indicator.className = 'p-3 rounded-lg border border-green-200 bg-green-50';
+            regleIcon.className = 'fas fa-check-circle text-green-600 text-lg mr-2';
+            regleText.textContent = 'Règle 80/20 respectée';
+            regleText.className = 'text-sm font-medium text-green-800';
+            document.getElementById('progress-bar').className = 'bg-green-600 h-2 rounded-full transition-all duration-300';
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            return true;
+        } else {
+            // Règle non respectée
+            indicator.className = 'p-3 rounded-lg border border-red-200 bg-red-50';
+            regleIcon.className = 'fas fa-times-circle text-red-600 text-lg mr-2';
+            regleText.textContent = 'Règle 80/20 non respectée - Minimum 80% obligatoire requis';
+            regleText.className = 'text-sm font-medium text-red-800';
+            document.getElementById('progress-bar').className = 'bg-red-600 h-2 rounded-full transition-all duration-300';
+            submitBtn.disabled = true;
+            submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            return false;
+        }
     }
 
     // Écouter les changements
@@ -220,12 +309,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 item.querySelector('.prix-total').value = (prix * quantite).toFixed(2);
             }
             
-            calculerTotaux();
+            verifierRegle8020();
         }
     });
 
-    // Initialiser les totaux
-    calculerTotaux();
+    // Empêcher la soumission si la règle n'est pas respectée
+    document.getElementById('commande-form').addEventListener('submit', function(e) {
+        if (!verifierRegle8020()) {
+            e.preventDefault();
+            alert('La commande ne peut pas être validée car la règle 80/20 n\'est pas respectée. Vous devez avoir au moins 80% de produits obligatoires.');
+            return false;
+        }
+    });
+
+    // Initialiser
+    verifierRegle8020();
 });
 </script>
 @endsection 

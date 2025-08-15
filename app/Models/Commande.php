@@ -17,6 +17,7 @@ class Commande extends Model
         'total_obligatoire',
         'total_libre',
         'notes',
+        'notes_admin',
         'pdf_path',
         'date_commande',
         'date_livraison',
@@ -54,6 +55,7 @@ class Commande extends Model
         $labels = [
             'en_attente' => 'En attente',
             'validee' => 'Validée',
+            'refusee' => 'Refusée',
             'livree' => 'Livrée',
             'annulee' => 'Annulée',
         ];

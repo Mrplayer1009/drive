@@ -28,6 +28,7 @@
                     <option value="">Tous les statuts</option>
                     <option value="en_attente">En attente</option>
                     <option value="validee">Validée</option>
+                    <option value="refusee">Refusée</option>
                     <option value="livree">Livrée</option>
                     <option value="annulee">Annulée</option>
                 </select>
@@ -98,21 +99,27 @@
                             <span class="px-2 py-1 text-xs font-medium rounded-full 
                                 {{ $commande->statut === 'livree' ? 'bg-green-100 text-green-800' : 
                                    ($commande->statut === 'validee' ? 'bg-blue-100 text-blue-800' : 
-                                   ($commande->statut === 'en_attente' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800')) }}">
+                                   ($commande->statut === 'refusee' ? 'bg-red-100 text-red-800' :
+                                   ($commande->statut === 'en_attente' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'))) }}">
                                 {{ $commande->statut_label }}
                             </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <a href="{{ route('admin.commandes.show', $commande) }}" class="text-blue-600 hover:text-blue-700 mr-3">
+                            <a href="{{ route('admin.commandes.show', $commande) }}" class="text-blue-600 hover:text-blue-700 mr-3" title="Voir">
                                 <i class="fas fa-eye"></i>
                             </a>
-                            <a href="{{ route('admin.commandes.edit', $commande) }}" class="text-orange-600 hover:text-orange-700 mr-3">
+                            <a href="{{ route('admin.commandes.edit', $commande) }}" class="text-orange-600 hover:text-orange-700 mr-3" title="Modifier">
                                 <i class="fas fa-edit"></i>
                             </a>
+                            @if(in_array($commande->statut, ['validee', 'livree']))
+                            <a href="{{ route('admin.commandes.download', $commande) }}" class="text-purple-600 hover:text-purple-700 mr-3" title="Télécharger PDF">
+                                <i class="fas fa-download"></i>
+                            </a>
+                            @endif
                             @if($commande->statut === 'en_attente')
                             <form action="{{ route('admin.commandes.validate', $commande) }}" method="POST" class="inline">
                                 @csrf
-                                <button type="submit" class="text-green-600 hover:text-green-700 mr-3">
+                                <button type="submit" class="text-green-600 hover:text-green-700 mr-3" title="Valider">
                                     <i class="fas fa-check"></i>
                                 </button>
                             </form>
@@ -175,6 +182,20 @@
                 <div class="ml-4">
                     <p class="text-sm font-medium text-black">Livrées</p>
                     <p class="text-2xl font-semibold text-black">{{ $commandes->where('statut', 'livree')->count() }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white shadow rounded-lg p-6">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <div class="w-8 h-8 bg-red-500 rounded-md flex items-center justify-center">
+                        <i class="fas fa-times text-black"></i>
+                    </div>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-black">Refusées</p>
+                    <p class="text-2xl font-semibold text-black">{{ $commandes->where('statut', 'refusee')->count() }}</p>
                 </div>
             </div>
         </div>

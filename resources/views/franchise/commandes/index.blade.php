@@ -122,8 +122,8 @@
                                 </form>
                                 @endif
                                 @if($commande->statut === 'validee' || $commande->statut === 'livree')
-                                <a href="{{ route('franchise.commandes.download', $commande) }}" class="text-green-600 hover:text-green-700" title="Télécharger le bon de commande">
-                                    <i class="fas fa-download"></i>
+                                <a href="{{ route('franchise.commandes.download', $commande) }}" target="_blank" class="text-green-600 hover:text-green-700" title="Voir le bon de commande">
+                                    <i class="fas fa-eye"></i>
                                 </a>
                                 @endif
                             </div>

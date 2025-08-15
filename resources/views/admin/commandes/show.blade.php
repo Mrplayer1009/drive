@@ -24,6 +24,10 @@
                         Valider
                     </button>
                 </form>
+                <button type="button" onclick="openRefuseModal()" class="bg-red-600 hover:bg-red-700 text-black px-4 py-2 rounded-lg transition duration-300">
+                    <i class="fas fa-times mr-2"></i>
+                    Refuser
+                </button>
                 @endif
                 <a href="{{ route('admin.commandes.index') }}" class="bg-gray-600 hover:bg-gray-700 text-black px-4 py-2 rounded-lg transition duration-300">
                     <i class="fas fa-arrow-left mr-2"></i>
@@ -216,5 +220,68 @@
             </div>
         </div>
     </div>
+
+
+
+    <!-- Notes administrateur -->
+    @if($commande->notes_admin)
+    <div class="bg-white shadow rounded-lg p-6">
+        <h3 class="text-lg font-medium text-black mb-4">Notes administrateur</h3>
+        
+        <div class="p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <p class="text-sm text-blue-800">{{ $commande->notes_admin }}</p>
+        </div>
+    </div>
+    @endif
 </div>
+
+<!-- Modal de refus -->
+<div id="refuseModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <h3 class="text-lg font-medium text-black mb-4">Refuser la commande</h3>
+            
+            <form action="{{ route('admin.commandes.refuse', $commande) }}" method="POST">
+                @csrf
+                
+                <div class="mb-4">
+                    <p class="text-sm text-black">Êtes-vous sûr de vouloir refuser cette commande ?</p>
+                </div>
+                
+                <div class="flex justify-end space-x-3">
+                    <button 
+                        type="button" 
+                        onclick="closeRefuseModal()" 
+                        class="px-4 py-2 bg-gray-300 text-black rounded-md hover:bg-gray-400 transition duration-300"
+                    >
+                        Annuler
+                    </button>
+                    <button 
+                        type="submit" 
+                        class="px-4 py-2 bg-red-600 text-black rounded-md hover:bg-red-700 transition duration-300"
+                    >
+                        Confirmer le refus
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function openRefuseModal() {
+    document.getElementById('refuseModal').classList.remove('hidden');
+}
+
+function closeRefuseModal() {
+    document.getElementById('refuseModal').classList.add('hidden');
+}
+
+// Fermer le modal en cliquant à l'extérieur
+document.getElementById('refuseModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeRefuseModal();
+    }
+});
+</script>
 @endsection 

@@ -71,23 +71,48 @@ class FranchiseController extends Controller
 
     public function camionsCreate()
     {
-        return view('franchise.camions.create');
+        $franchise = Auth::user();
+        
+        // Récupérer les statistiques des demandes
+        $demandes_en_cours = DemandeCamion::where('franchise_id', $franchise->id)
+            ->where('statut', 'en_attente')
+            ->count();
+            
+        $demandes_approuvees = DemandeCamion::where('franchise_id', $franchise->id)
+            ->where('statut', 'approuvee')
+            ->count();
+        
+        return view('franchise.camions.create', compact('demandes_en_cours', 'demandes_approuvees'));
     }
 
     public function camionsStore(Request $request)
     {
+        $franchise = Auth::user();
+        
         $request->validate([
             'type_camion' => 'required|string',
             'localisation_souhaitee' => 'required|string',
-            'date_debut_souhaitee' => 'required|date',
+            'date_debut_souhaitee' => 'required|date|after:today',
             'duree_attribution' => 'required|string',
             'motif' => 'required|string|min:10',
             'urgent' => 'boolean',
         ]);
 
-        // Créer la demande (placeholder - à implémenter avec un modèle DemandeCamion)
-        // Pour l'instant, on redirige avec un message de succès
-        return redirect()->route('franchise.camions.index')->with('success', 'Demande de camion envoyée avec succès');
+        // Créer la demande de camion
+        DemandeCamion::create([
+            'franchise_id' => $franchise->id,
+            'camion_id' => null, // Pas de camion spécifique pour une nouvelle demande
+            'type_demande' => 'nouveau',
+            'type_camion_souhaite' => $request->type_camion,
+            'localisation_souhaitee' => $request->localisation_souhaitee,
+            'date_debut_souhaitee' => $request->date_debut_souhaitee,
+            'duree_attribution' => $request->duree_attribution,
+            'motif' => $request->motif,
+            'urgent' => $request->has('urgent'),
+            'statut' => 'en_attente',
+        ]);
+
+        return redirect()->route('franchise.camions.index')->with('success', 'Demande de camion envoyée avec succès. L\'administrateur a été notifié.');
     }
 
     public function camionsShow(Camion $camion)
@@ -97,6 +122,9 @@ class FranchiseController extends Controller
         if (!$franchise->camions->contains($camion->id)) {
             abort(403, 'Accès non autorisé à ce camion');
         }
+
+        // Charger le camion avec les données pivot de la franchise
+        $camion = $franchise->camions()->where('camion_id', $camion->id)->first();
 
         return view('franchise.camions.show', compact('camion'));
     }
@@ -193,6 +221,49 @@ class FranchiseController extends Controller
             'notes' => 'nullable|string',
         ]);
 
+        // Vérifier la règle 80/20
+        $total_obligatoire = 0;
+        $total_libre = 0;
+        $produits_data = [];
+
+        foreach ($request->produits as $produit_data) {
+            $produit = Produit::find($produit_data['produit_id']);
+            $prix_total = $produit->prix_unitaire * $produit_data['quantite'];
+            
+            if ($produit->obligatoire) {
+                $total_obligatoire += $prix_total;
+            } else {
+                $total_libre += $prix_total;
+            }
+
+            $produits_data[$produit->id] = [
+                'quantite' => $produit_data['quantite'],
+                'prix_unitaire' => $produit->prix_unitaire,
+                'prix_total' => $prix_total,
+            ];
+        }
+
+        $total_commande = $total_obligatoire + $total_libre;
+        
+        // Vérifier que la règle 80/20 est respectée
+        if ($total_commande > 0) {
+            $pourcentage_obligatoire = ($total_obligatoire / $total_commande) * 100;
+            
+            if ($pourcentage_obligatoire < 80) {
+                return back()
+                    ->withInput()
+                    ->withErrors([
+                        'regle_8020' => 'La règle 80/20 n\'est pas respectée. Vous devez avoir au moins 80% de produits obligatoires. Actuellement : ' . number_format($pourcentage_obligatoire, 1) . '%'
+                    ]);
+            }
+        } else {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'regle_8020' => 'La commande doit contenir au moins un produit.'
+                ]);
+        }
+
         DB::beginTransaction();
         
         try {
@@ -203,32 +274,8 @@ class FranchiseController extends Controller
                 'notes' => $request->notes,
             ]);
 
-            $total_obligatoire = 0;
-            $total_libre = 0;
-            $produits_data = [];
-
-            foreach ($request->produits as $produit_data) {
-                $produit = Produit::find($produit_data['produit_id']);
-                $prix_total = $produit->prix_unitaire * $produit_data['quantite'];
-                
-                $obligatoire = $produit->obligatoire;
-                if ($obligatoire) {
-                    $total_obligatoire += $prix_total;
-                } else {
-                    $total_libre += $prix_total;
-                }
-
-                $produits_data[$produit->id] = [
-                    'quantite' => $produit_data['quantite'],
-                    'prix_unitaire' => $produit->prix_unitaire,
-                    'prix_total' => $prix_total,
-                ];
-            }
-
             // Attacher les produits à la commande via la relation many-to-many
             $commande->produits()->attach($produits_data);
-
-            $total_commande = $total_obligatoire + $total_libre;
             
             $commande->update([
                 'total_commande' => $total_commande,
@@ -363,74 +410,94 @@ class FranchiseController extends Controller
 
     private function generateCommandePdf(Commande $commande)
     {
-        // Charger les relations nécessaires
-        $commande->load(['franchise', 'entrepot', 'produits']);
-        
-        // Générer le PDF avec DomPDF
-        $pdf = Pdf::loadView('pdf.commande', compact('commande'));
-        
-        // Configurer les options du PDF
-        $pdf->setPaper('A4', 'portrait');
-        $pdf->setOptions([
-            'isHtml5ParserEnabled' => true,
-            'isRemoteEnabled' => true,
-            'defaultFont' => 'Arial'
-        ]);
-        
-        // Créer le nom de fichier
-        $filename = 'commandes/commande_' . $commande->id . '_' . \Carbon\Carbon::parse($commande->date_commande)->format('Y-m-d') . '.pdf';
-        $path = storage_path('app/public/' . $filename);
-        $dir = dirname($path);
-        
-        // Créer le dossier s'il n'existe pas
-        if (!is_dir($dir)) {
-            if (!mkdir($dir, 0755, true)) {
-                throw new \Exception('Impossible de créer le dossier de stockage');
+        try {
+            // Charger les relations nécessaires
+            $commande->load(['franchise', 'entrepot', 'produits']);
+            
+            // Vérifier que les données nécessaires existent
+            if (!$commande->franchise || !$commande->entrepot) {
+                throw new \Exception('Données manquantes pour générer le PDF');
             }
+            
+            // Générer le PDF avec DomPDF
+            $pdf = Pdf::loadView('pdf.commande-minimal', compact('commande'));
+            
+            // Configurer les options du PDF
+            $pdf->setPaper('A4', 'portrait');
+            
+            // Créer le nom de fichier
+            $filename = 'commandes/commande_' . $commande->id . '_' . \Carbon\Carbon::parse($commande->date_commande)->format('Y-m-d') . '.pdf';
+            $path = storage_path('app/public/' . $filename);
+            $dir = dirname($path);
+            
+            // Créer le dossier s'il n'existe pas
+            if (!is_dir($dir)) {
+                if (!mkdir($dir, 0755, true)) {
+                    throw new \Exception('Impossible de créer le dossier de stockage');
+                }
+            }
+            
+            // Sauvegarder le PDF
+            $pdf->save($path);
+            
+            // Vérifier que le fichier a été créé
+            if (!file_exists($path)) {
+                throw new \Exception('Erreur lors de la sauvegarde du PDF');
+            }
+            
+            $commande->update(['pdf_path' => $filename]);
+            
+            return $commande;
+        } catch (\Exception $e) {
+            \Log::error('Erreur génération PDF commande ' . $commande->id . ': ' . $e->getMessage());
+            throw new \Exception('Erreur lors de la génération du PDF: ' . $e->getMessage());
         }
-        
-        // Sauvegarder le PDF
-        $pdf->save($path);
-        
-        $commande->update(['pdf_path' => $filename]);
-        
-        return $commande;
     }
 
     private function generateVentePdf(Vente $vente)
     {
-        // Charger les relations nécessaires
-        $vente->load(['franchise', 'camion']);
-        
-        // Générer le PDF avec DomPDF
-        $pdf = Pdf::loadView('pdf.vente', compact('vente'));
-        
-        // Configurer les options du PDF
-        $pdf->setPaper('A4', 'portrait');
-        $pdf->setOptions([
-            'isHtml5ParserEnabled' => true,
-            'isRemoteEnabled' => true,
-            'defaultFont' => 'Arial'
-        ]);
-        
-        // Créer le nom de fichier
-        $filename = 'ventes/vente_' . $vente->id . '_' . \Carbon\Carbon::parse($vente->date_vente)->format('Y-m-d') . '.pdf';
-        $path = storage_path('app/public/' . $filename);
-        $dir = dirname($path);
-        
-        // Créer le dossier s'il n'existe pas
-        if (!is_dir($dir)) {
-            if (!mkdir($dir, 0755, true)) {
-                throw new \Exception('Impossible de créer le dossier de stockage');
+        try {
+            // Charger les relations nécessaires
+            $vente->load(['franchise', 'camion']);
+            
+            // Vérifier que les données nécessaires existent
+            if (!$vente->franchise) {
+                throw new \Exception('Données manquantes pour générer le PDF');
             }
+            
+            // Générer le PDF avec DomPDF
+            $pdf = Pdf::loadView('pdf.vente', compact('vente'));
+            
+            // Configurer les options du PDF
+            $pdf->setPaper('A4', 'portrait');
+            
+            // Créer le nom de fichier
+            $filename = 'ventes/vente_' . $vente->id . '_' . \Carbon\Carbon::parse($vente->date_vente)->format('Y-m-d') . '.pdf';
+            $path = storage_path('app/public/' . $filename);
+            $dir = dirname($path);
+            
+            // Créer le dossier s'il n'existe pas
+            if (!is_dir($dir)) {
+                if (!mkdir($dir, 0755, true)) {
+                    throw new \Exception('Impossible de créer le dossier de stockage');
+                }
+            }
+            
+            // Sauvegarder le PDF
+            $pdf->save($path);
+            
+            // Vérifier que le fichier a été créé
+            if (!file_exists($path)) {
+                throw new \Exception('Erreur lors de la sauvegarde du PDF');
+            }
+            
+            $vente->update(['pdf_path' => $filename]);
+            
+            return $vente;
+        } catch (\Exception $e) {
+            \Log::error('Erreur génération PDF vente ' . $vente->id . ': ' . $e->getMessage());
+            throw new \Exception('Erreur lors de la génération du PDF: ' . $e->getMessage());
         }
-        
-        // Sauvegarder le PDF
-        $pdf->save($path);
-        
-        $vente->update(['pdf_path' => $filename]);
-        
-        return $vente;
     }
 
     public function commandesShow(Commande $commande)
@@ -515,27 +582,27 @@ class FranchiseController extends Controller
             abort(403, 'Accès non autorisé');
         }
 
-        // Vérifier que la commande peut être téléchargée
+        // Vérifier que la commande peut être affichée
         if (!in_array($commande->statut, ['validee', 'livree'])) {
-            return redirect()->route('franchise.commandes.show', $commande)->with('error', 'Seules les commandes validées ou livrées peuvent être téléchargées');
+            return redirect()->route('franchise.commandes.show', $commande)->with('error', 'Seules les commandes validées ou livrées peuvent être affichées');
         }
 
         try {
-            // Générer le PDF si pas encore généré
-            if (!$commande->pdf_path) {
-                $commande = $this->generateCommandePdf($commande);
-            }
-
-            $filePath = storage_path('app/public/' . $commande->pdf_path);
+            // Charger les relations nécessaires
+            $commande->load(['franchise', 'entrepot', 'produits']);
             
-            if (!file_exists($filePath)) {
-                // Régénérer le PDF si le fichier n'existe pas
-                $commande = $this->generateCommandePdf($commande);
-                $filePath = storage_path('app/public/' . $commande->pdf_path);
+            // Vérifier que les données nécessaires existent
+            if (!$commande->franchise || !$commande->entrepot) {
+                throw new \Exception('Données manquantes pour générer le PDF');
             }
-
-            return response()->download($filePath, 'commande_' . $commande->id . '.pdf');
+            
+            // Générer le PDF pour affichage dans le navigateur
+            $pdf = Pdf::loadView('pdf.commande-minimal', compact('commande'));
+            $pdf->setPaper('A4', 'portrait');
+            
+            return $pdf->stream('commande_' . $commande->id . '.pdf');
         } catch (\Exception $e) {
+            \Log::error('Erreur génération PDF commande ' . $commande->id . ': ' . $e->getMessage());
             return redirect()->route('franchise.commandes.show', $commande)->with('error', 'Erreur lors de la génération du PDF: ' . $e->getMessage());
         }
     }
@@ -548,6 +615,9 @@ class FranchiseController extends Controller
         if (!$franchise->camions->contains($camion->id)) {
             abort(403, 'Accès non autorisé à ce camion');
         }
+
+        // Charger le camion avec les données pivot de la franchise
+        $camion = $franchise->camions()->where('camion_id', $camion->id)->first();
 
         return view('franchise.camions.signaler-panne', compact('camion'));
     }
@@ -596,6 +666,9 @@ class FranchiseController extends Controller
             abort(403, 'Accès non autorisé à ce camion');
         }
 
+        // Charger le camion avec les données pivot de la franchise
+        $camion = $franchise->camions()->where('camion_id', $camion->id)->first();
+
         return view('franchise.camions.demander-remplacement', compact('camion'));
     }
 
@@ -610,7 +683,7 @@ class FranchiseController extends Controller
         $request->validate([
             'type_camion_souhaite' => 'required|string',
             'localisation_souhaitee' => 'required|string',
-            'date_debut_souhaitee' => 'required|date',
+            'date_debut_souhaitee' => 'required|date|after:today',
             'duree_attribution' => 'required|in:temporaire,semaine,mois,permanent',
             'motif' => 'required|string|min:10',
             'urgent' => 'boolean',

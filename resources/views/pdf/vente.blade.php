@@ -37,17 +37,15 @@
             margin-bottom: 30px;
         }
         .info-grid {
-            display: table;
             width: 100%;
             border-collapse: collapse;
         }
         .info-row {
-            display: table-row;
+            border-bottom: 1px solid #eee;
         }
         .info-cell {
-            display: table-cell;
             padding: 8px;
-            border-bottom: 1px solid #eee;
+            vertical-align: top;
         }
         .info-label {
             font-weight: bold;
@@ -63,17 +61,15 @@
             border-radius: 8px;
         }
         .financial-grid {
-            display: table;
             width: 100%;
             border-collapse: collapse;
         }
         .financial-row {
-            display: table-row;
+            border-bottom: 1px solid #dee2e6;
         }
         .financial-cell {
-            display: table-cell;
             padding: 12px 8px;
-            border-bottom: 1px solid #dee2e6;
+            vertical-align: top;
         }
         .financial-label {
             font-weight: bold;
@@ -120,82 +116,82 @@
     </div>
 
     <div class="info-section">
-        <div class="info-grid">
-            <div class="info-row">
-                <div class="info-cell info-label">Franchisé :</div>
-                <div class="info-cell info-value">{{ $vente->franchise->nom_complet }}</div>
-            </div>
-            <div class="info-row">
-                <div class="info-cell info-label">Date de vente :</div>
-                <div class="info-cell info-value">
+        <table class="info-grid">
+            <tr class="info-row">
+                <td class="info-cell info-label">Franchisé :</td>
+                <td class="info-cell info-value">{{ $vente->franchise->nom }} {{ $vente->franchise->prenom }}</td>
+            </tr>
+            <tr class="info-row">
+                <td class="info-cell info-label">Date de vente :</td>
+                <td class="info-cell info-value">
                     <span class="date-badge">{{ \Carbon\Carbon::parse($vente->date_vente)->format('d/m/Y') }}</span>
-                </div>
-            </div>
+                </td>
+            </tr>
             @if($vente->camion)
-            <div class="info-row">
-                <div class="info-cell info-label">Camion utilisé :</div>
-                <div class="info-cell info-value">{{ $vente->camion->immatriculation }} ({{ $vente->camion->marque }} {{ $vente->camion->modele }})</div>
-            </div>
+            <tr class="info-row">
+                <td class="info-cell info-label">Camion utilisé :</td>
+                <td class="info-cell info-value">{{ $vente->camion->immatriculation }} ({{ $vente->camion->marque }} {{ $vente->camion->modele }})</td>
+            </tr>
             @endif
-            <div class="info-row">
-                <div class="info-cell info-label">Nombre de commandes :</div>
-                <div class="info-cell info-value">{{ $vente->nombre_commandes }}</div>
-            </div>
+            <tr class="info-row">
+                <td class="info-cell info-label">Nombre de commandes :</td>
+                <td class="info-cell info-value">{{ $vente->nombre_commandes }}</td>
+            </tr>
             @if($vente->notes)
-            <div class="info-row">
-                <div class="info-cell info-label">Notes :</div>
-                <div class="info-cell info-value">{{ $vente->notes }}</div>
-            </div>
+            <tr class="info-row">
+                <td class="info-cell info-label">Notes :</td>
+                <td class="info-cell info-value">{{ $vente->notes }}</td>
+            </tr>
             @endif
-        </div>
+        </table>
     </div>
 
     <div class="financial-section">
         <h3>Détails financiers</h3>
-        <div class="financial-grid">
-            <div class="financial-row">
-                <div class="financial-cell financial-label">Montant total des ventes :</div>
-                <div class="financial-cell financial-value">{{ number_format($vente->montant_total, 2, ',', ' ') }} €</div>
-            </div>
-            <div class="financial-row reverse-row">
-                <div class="financial-cell financial-label">Montant reversé ({{ $vente->franchise->pourcentage_ventes }}%) :</div>
-                <div class="financial-cell financial-value">{{ number_format($vente->montant_reverse, 2, ',', ' ') }} €</div>
-            </div>
-            <div class="financial-row total-row">
-                <div class="financial-cell financial-label">Montant net pour le franchisé :</div>
-                <div class="financial-cell financial-value">{{ number_format($vente->montant_total - $vente->montant_reverse, 2, ',', ' ') }} €</div>
-            </div>
-        </div>
+        <table class="financial-grid">
+            <tr class="financial-row">
+                <td class="financial-cell financial-label">Montant total des ventes :</td>
+                <td class="financial-cell financial-value">{{ number_format($vente->montant_total, 2, ',', ' ') }} €</td>
+            </tr>
+            <tr class="financial-row reverse-row">
+                <td class="financial-cell financial-label">Montant reversé ({{ $vente->franchise->pourcentage_ventes }}%) :</td>
+                <td class="financial-cell financial-value">{{ number_format($vente->montant_reverse, 2, ',', ' ') }} €</td>
+            </tr>
+            <tr class="financial-row total-row">
+                <td class="financial-cell financial-label">Montant net pour le franchisé :</td>
+                <td class="financial-cell financial-value">{{ number_format($vente->montant_total - $vente->montant_reverse, 2, ',', ' ') }} €</td>
+            </tr>
+        </table>
     </div>
 
     <div class="info-section">
         <h3>Informations complémentaires</h3>
-        <div class="info-grid">
-            <div class="info-row">
-                <div class="info-cell info-label">Pourcentage de reversement :</div>
-                <div class="info-cell info-value">{{ $vente->franchise->pourcentage_ventes }}%</div>
-            </div>
-            <div class="info-row">
-                <div class="info-cell info-label">Moyenne par commande :</div>
-                <div class="info-cell info-value">
+        <table class="info-grid">
+            <tr class="info-row">
+                <td class="info-cell info-label">Pourcentage de reversement :</td>
+                <td class="info-cell info-value">{{ $vente->franchise->pourcentage_ventes }}%</td>
+            </tr>
+            <tr class="info-row">
+                <td class="info-cell info-label">Moyenne par commande :</td>
+                <td class="info-cell info-value">
                     @if($vente->nombre_commandes > 0)
                         {{ number_format($vente->montant_total / $vente->nombre_commandes, 2, ',', ' ') }} €
                     @else
                         N/A
                     @endif
-                </div>
-            </div>
-            <div class="info-row">
-                <div class="info-cell info-label">Performance :</div>
-                <div class="info-cell info-value">
+                </td>
+            </tr>
+            <tr class="info-row">
+                <td class="info-cell info-label">Performance :</td>
+                <td class="info-cell info-value">
                     @if($vente->montant_total > 0)
                         {{ number_format(($vente->montant_reverse / $vente->montant_total) * 100, 1) }}% de reversement
                     @else
                         N/A
                     @endif
-                </div>
-            </div>
-        </div>
+                </td>
+            </tr>
+        </table>
     </div>
 
     <div class="footer">

@@ -55,7 +55,12 @@
 
                 <div class="mb-4">
                     <label for="date_debut_souhaitee" class="block text-sm font-medium text-black mb-2">Date de début souhaitée</label>
-                    <input type="date" id="date_debut_souhaitee" name="date_debut_souhaitee" value="{{ old('date_debut_souhaitee') }}" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500">
+                    <input type="date" id="date_debut_souhaitee" name="date_debut_souhaitee" 
+                           value="{{ old('date_debut_souhaitee') }}" 
+                           min="{{ \Carbon\Carbon::tomorrow()->format('Y-m-d') }}"
+                           required 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500">
+                    <p class="text-xs text-gray-600 mt-1">Minimum Demain car faut pas abuser</p>
                 </div>
 
                 <div class="mb-4">

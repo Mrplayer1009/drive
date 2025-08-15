@@ -112,8 +112,111 @@
                     </div>
                     <i class="fas fa-euro-sign text-purple-600 text-2xl"></i>
                 </div>
+
+                <div class="flex justify-between items-center p-3 bg-indigo-50 rounded-lg border border-indigo-200">
+                    <div>
+                        <p class="text-sm font-medium text-black">Produits en stock</p>
+                        <p class="text-2xl font-semibold text-black">{{ $stocks->count() }}</p>
+                    </div>
+                    <i class="fas fa-boxes text-indigo-600 text-2xl"></i>
+                </div>
+
+                <div class="flex justify-between items-center p-3 bg-red-50 rounded-lg border border-red-200">
+                    <div>
+                        <p class="text-sm font-medium text-black">Produits en rupture</p>
+                        <p class="text-2xl font-semibold text-black">{{ $stocks->where('quantite_stock', '<=', 'stock_minimum')->count() }}</p>
+                    </div>
+                    <i class="fas fa-exclamation-triangle text-red-600 text-2xl"></i>
+                </div>
             </div>
         </div>
+    </div>
+
+    <!-- Produits en stock -->
+    <div class="bg-white shadow rounded-lg p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-medium text-black">Produits en stock</h3>
+            <a href="{{ route('admin.entrepots.stocks.index', $entrepot) }}" class="bg-orange-600 hover:bg-orange-700 text-black px-3 py-1 rounded-lg text-sm transition duration-300">
+                <i class="fas fa-cog mr-1"></i>
+                Gérer les stocks
+            </a>
+        </div>
+        
+        @if($stocks->count() > 0)
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Produit</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Catégorie</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Stock actuel</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Stock minimum</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Statut</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        @foreach($stocks as $stock)
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div>
+                                    <div class="text-sm font-medium text-black">{{ $stock->produit->nom }}</div>
+                                    <div class="text-sm text-gray-500">{{ $stock->produit->description }}</div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-black">
+                                {{ $stock->produit->categorie_label }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-black">
+                                {{ $stock->quantite_stock }} {{ $stock->produit->unite_mesure }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-black">
+                                {{ $stock->stock_minimum }} {{ $stock->produit->unite_mesure }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                @if($stock->quantite_stock <= $stock->stock_minimum)
+                                    <span class="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">
+                                        <i class="fas fa-exclamation-triangle mr-1"></i>
+                                        Rupture
+                                    </span>
+                                @elseif($stock->quantite_stock <= ($stock->stock_minimum * 1.5))
+                                    <span class="px-2 py-1 text-xs font-medium rounded-full bg-orange-100 text-orange-800">
+                                        <i class="fas fa-exclamation-circle mr-1"></i>
+                                        Faible
+                                    </span>
+                                @else
+                                    <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
+                                        <i class="fas fa-check-circle mr-1"></i>
+                                        OK
+                                    </span>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <a href="{{ route('admin.entrepots.stocks.edit', [$entrepot, $stock]) }}" class="text-orange-600 hover:text-orange-700 mr-3" title="Modifier">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{{ route('admin.entrepots.stocks.show', [$entrepot, $stock]) }}" class="text-blue-600 hover:text-blue-700" title="Voir">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @else
+            <div class="text-center py-8">
+                <div class="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-gray-100 mb-4">
+                    <i class="fas fa-boxes text-gray-400 text-2xl"></i>
+                </div>
+                <h3 class="text-lg font-medium text-black mb-2">Aucun produit en stock</h3>
+                <p class="text-black mb-4">Cet entrepôt n'a pas encore de produits en stock.</p>
+                <a href="{{ route('admin.entrepots.stocks.create', $entrepot) }}" class="bg-orange-600 hover:bg-orange-700 text-black px-4 py-2 rounded-lg transition duration-300">
+                    <i class="fas fa-plus mr-2"></i>
+                    Ajouter un produit
+                </a>
+            </div>
+        @endif
     </div>
 
     <!-- Commandes récentes -->

@@ -69,13 +69,21 @@
                     <select id="statut" name="statut" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500">
                         <option value="en_attente" {{ old('statut', $commande->statut) === 'en_attente' ? 'selected' : '' }}>En attente</option>
                         <option value="validee" {{ old('statut', $commande->statut) === 'validee' ? 'selected' : '' }}>Validée</option>
+                        <option value="refusee" {{ old('statut', $commande->statut) === 'refusee' ? 'selected' : '' }}>Refusée</option>
                         <option value="livree" {{ old('statut', $commande->statut) === 'livree' ? 'selected' : '' }}>Livrée</option>
                     </select>
                 </div>
 
+
+
                 <div class="mb-4">
-                    <label for="notes" class="block text-sm font-medium text-black mb-2">Notes</label>
+                    <label for="notes" class="block text-sm font-medium text-black mb-2">Notes (franchisé)</label>
                     <textarea id="notes" name="notes" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500">{{ old('notes', $commande->notes) }}</textarea>
+                </div>
+
+                <div class="mb-4">
+                    <label for="notes_admin" class="block text-sm font-medium text-black mb-2">Notes administrateur</label>
+                    <textarea id="notes_admin" name="notes_admin" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500" placeholder="Notes internes pour l'équipe admin...">{{ old('notes_admin', $commande->notes_admin) }}</textarea>
                 </div>
             </div>
 
