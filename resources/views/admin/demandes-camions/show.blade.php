@@ -145,7 +145,7 @@
                 <div class="space-y-3">
                     <div class="flex justify-between p-2 bg-gray-50 rounded">
                         <span class="text-sm text-black">Immatriculation :</span>
-                        <span class="text-sm font-medium text-black">{{ $demande->camion->immatriculation }}</span>
+                        <span class="text-sm font-medium text-black">{{ $demande->camion->immatriculation }} - {{ $demande->camion->ville_localisation }}</span>
                     </div>
                     <div class="flex justify-between p-2 bg-gray-50 rounded">
                         <span class="text-sm text-black">Marque/Modèle :</span>
@@ -188,7 +188,7 @@
                     @foreach($camionsDisponibles as $camion)
                     <div class="flex justify-between items-center p-2 bg-green-50 rounded border border-green-200">
                         <div>
-                            <span class="text-sm font-medium text-black">{{ $camion->immatriculation }}</span>
+                            <span class="text-sm font-medium text-black">{{ $camion->immatriculation }} - {{ $camion->ville_localisation }}</span>
                             <br>
                             <span class="text-xs text-gray-600">{{ $camion->marque }} {{ $camion->modele }} ({{ $camion->annee }})</span>
                         </div>

@@ -14,6 +14,7 @@ class Entrepot extends Model
         'adresse',
         'ville',
         'code_postal',
+        'telephone',
         'capacite_stockage',
         'cuisine',
         'statut',
@@ -21,7 +22,7 @@ class Entrepot extends Model
 
     protected $casts = [
         'cuisine' => 'boolean',
-        'capacite_stockage' => 'decimal:2',
+        'capacite_stockage' => 'decimal:0',
     ];
 
     // Relations

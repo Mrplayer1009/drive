@@ -19,7 +19,7 @@ class DatabaseSeeder extends Seeder
             CamionSeeder::class,
             CommandeSeeder::class,
             VenteSeeder::class,
-            StockSeeder::class, // Ajouter après les autres seeders
+            StockSeeder::class,
         ]);
     }
 }

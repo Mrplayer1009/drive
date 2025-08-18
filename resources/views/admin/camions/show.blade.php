@@ -25,7 +25,7 @@
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Informations du camion -->
+        <!-- info du camion -->
         <div class="bg-white shadow rounded-lg p-6">
             <h3 class="text-lg font-medium text-black mb-4">Informations du camion</h3>
             
@@ -70,7 +70,7 @@
                 <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                     <div>
                         <p class="text-sm font-medium text-black">Localisation</p>
-                        <p class="text-sm text-black">{{ $camion->localisation_complete }}</p>
+                        <p class="text-sm text-black">{{ $camion->ville_localisation }}</p>
                     </div>
                     <i class="fas fa-map-marker-alt text-orange-600"></i>
                 </div>
@@ -86,7 +86,7 @@
             @endif
         </div>
 
-        <!-- Franchisé assigné -->
+
         <div class="bg-white shadow rounded-lg p-6">
             <h3 class="text-lg font-medium text-black mb-4">Franchisé assigné</h3>
             
@@ -153,7 +153,7 @@
         </div>
     </div>
 
-    <!-- Ventes associées -->
+
     <div class="bg-white shadow rounded-lg p-6">
         <h3 class="text-lg font-medium text-black mb-4">Ventes associées</h3>
         

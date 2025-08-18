@@ -52,7 +52,7 @@
                         <option value="">Sélectionner un camion...</option>
                         @foreach($camionsDisponibles as $camion)
                         <option value="{{ $camion->id }}" {{ old('camion_attribue') == $camion->id ? 'selected' : '' }}>
-                            {{ $camion->immatriculation }} - {{ $camion->marque }} {{ $camion->modele }} ({{ $camion->annee }})
+                            {{ $camion->immatriculation }} - {{ $camion->ville_localisation }} - {{ $camion->marque }} {{ $camion->modele }} ({{ $camion->annee }})
                         </option>
                         @endforeach
                     </select>
@@ -157,7 +157,7 @@
                     @foreach($demande->franchise->camions as $camion)
                     <div class="flex justify-between items-center p-2 bg-blue-50 rounded border border-blue-200">
                         <div>
-                            <span class="text-sm font-medium text-black">{{ $camion->immatriculation }}</span>
+                            <span class="text-sm font-medium text-black">{{ $camion->immatriculation }} - {{ $camion->ville_localisation }}</span>
                             <br>
                             <span class="text-xs text-gray-600">{{ $camion->marque }} {{ $camion->modele }}</span>
                         </div>

@@ -16,7 +16,6 @@ class CommandeSeeder extends Seeder
         $entrepots = Entrepot::all();
         $produits = Produit::all();
 
-        // Créer quelques commandes de test
         for ($i = 0; $i < 10; $i++) {
             $franchise = $franchises->random();
             $entrepot = $entrepots->random();

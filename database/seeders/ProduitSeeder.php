@@ -14,7 +14,7 @@ class ProduitSeeder extends Seeder
             [
                 'nom' => 'Pain Burger',
                 'description' => 'Pain spécial pour burgers',
-                'categorie' => 'ingredient',
+                'categorie' => 'ingredients',
                 'prix_unitaire' => 0.50,
                 'unite_mesure' => 'unité',
                 'stock_minimum' => 100,
@@ -23,7 +23,7 @@ class ProduitSeeder extends Seeder
             [
                 'nom' => 'Steak de Bœuf',
                 'description' => 'Steak de bœuf 150g',
-                'categorie' => 'ingredient',
+                'categorie' => 'ingredients',
                 'prix_unitaire' => 2.50,
                 'unite_mesure' => 'unité',
                 'stock_minimum' => 50,
@@ -32,7 +32,7 @@ class ProduitSeeder extends Seeder
             [
                 'nom' => 'Fromage Cheddar',
                 'description' => 'Fromage cheddar en tranches',
-                'categorie' => 'ingredient',
+                'categorie' => 'ingredients',
                 'prix_unitaire' => 0.80,
                 'unite_mesure' => 'unité',
                 'stock_minimum' => 80,
@@ -41,7 +41,7 @@ class ProduitSeeder extends Seeder
             [
                 'nom' => 'Salade',
                 'description' => 'Salade fraîche',
-                'categorie' => 'ingredient',
+                'categorie' => 'ingredients',
                 'prix_unitaire' => 0.30,
                 'unite_mesure' => 'unité',
                 'stock_minimum' => 100,
@@ -50,7 +50,7 @@ class ProduitSeeder extends Seeder
             [
                 'nom' => 'Tomates',
                 'description' => 'Tomates fraîches',
-                'categorie' => 'ingredient',
+                'categorie' => 'ingredients',
                 'prix_unitaire' => 0.20,
                 'unite_mesure' => 'unité',
                 'stock_minimum' => 100,
@@ -59,7 +59,7 @@ class ProduitSeeder extends Seeder
             [
                 'nom' => 'Oignons',
                 'description' => 'Oignons frais',
-                'categorie' => 'ingredient',
+                'categorie' => 'ingredients',
                 'prix_unitaire' => 0.15,
                 'unite_mesure' => 'unité',
                 'stock_minimum' => 100,
@@ -68,7 +68,7 @@ class ProduitSeeder extends Seeder
             [
                 'nom' => 'Sauce Burger',
                 'description' => 'Sauce spéciale burger',
-                'categorie' => 'ingredient',
+                'categorie' => 'ingredients',
                 'prix_unitaire' => 0.40,
                 'unite_mesure' => 'unité',
                 'stock_minimum' => 80,
@@ -77,7 +77,7 @@ class ProduitSeeder extends Seeder
             [
                 'nom' => 'Frites',
                 'description' => 'Frites surgelées',
-                'categorie' => 'ingredient',
+                'categorie' => 'ingredients',
                 'prix_unitaire' => 1.20,
                 'unite_mesure' => 'kg',
                 'stock_minimum' => 20,
@@ -88,7 +88,7 @@ class ProduitSeeder extends Seeder
             [
                 'nom' => 'Burger Classique',
                 'description' => 'Burger avec steak, fromage, salade, tomate, oignon',
-                'categorie' => 'plat',
+                'categorie' => 'plats',
                 'prix_unitaire' => 8.50,
                 'unite_mesure' => 'unité',
                 'stock_minimum' => 0,
@@ -97,7 +97,7 @@ class ProduitSeeder extends Seeder
             [
                 'nom' => 'Burger Bacon',
                 'description' => 'Burger avec bacon, steak, fromage',
-                'categorie' => 'plat',
+                'categorie' => 'plats',
                 'prix_unitaire' => 10.50,
                 'unite_mesure' => 'unité',
                 'stock_minimum' => 0,
@@ -106,7 +106,7 @@ class ProduitSeeder extends Seeder
             [
                 'nom' => 'Burger Végétarien',
                 'description' => 'Burger végétarien avec steak de légumes',
-                'categorie' => 'plat',
+                'categorie' => 'plats',
                 'prix_unitaire' => 9.00,
                 'unite_mesure' => 'unité',
                 'stock_minimum' => 0,
@@ -117,7 +117,7 @@ class ProduitSeeder extends Seeder
             [
                 'nom' => 'Coca-Cola',
                 'description' => 'Coca-Cola 33cl',
-                'categorie' => 'boisson',
+                'categorie' => 'boissons',
                 'prix_unitaire' => 1.50,
                 'unite_mesure' => 'unité',
                 'stock_minimum' => 50,
@@ -126,7 +126,7 @@ class ProduitSeeder extends Seeder
             [
                 'nom' => 'Fanta',
                 'description' => 'Fanta Orange 33cl',
-                'categorie' => 'boisson',
+                'categorie' => 'boissons',
                 'prix_unitaire' => 1.50,
                 'unite_mesure' => 'unité',
                 'stock_minimum' => 30,
@@ -135,7 +135,7 @@ class ProduitSeeder extends Seeder
             [
                 'nom' => 'Sprite',
                 'description' => 'Sprite 33cl',
-                'categorie' => 'boisson',
+                'categorie' => 'boissons',
                 'prix_unitaire' => 1.50,
                 'unite_mesure' => 'unité',
                 'stock_minimum' => 30,
@@ -144,7 +144,7 @@ class ProduitSeeder extends Seeder
             [
                 'nom' => 'Eau Minérale',
                 'description' => 'Eau minérale 50cl',
-                'categorie' => 'boisson',
+                'categorie' => 'boissons',
                 'prix_unitaire' => 1.00,
                 'unite_mesure' => 'unité',
                 'stock_minimum' => 40,

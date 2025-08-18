@@ -49,18 +49,18 @@
                 <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                     <div>
                         <p class="text-sm font-medium text-black">Téléphone</p>
-                        <p class="text-sm text-black">{{ $entrepot->telephone }}</p>
+                        <p class="text-sm text-black">{{ $entrepot->telephone ?? 'Non renseigné' }}</p>
                     </div>
                     <i class="fas fa-phone text-orange-600"></i>
                 </div>
 
-                <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                    <div>
-                        <p class="text-sm font-medium text-black">Capacité</p>
-                        <p class="text-sm text-black">{{ $entrepot->capacite }} m³</p>
+                                    <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                        <div>
+                            <p class="text-sm font-medium text-black">Capacité</p>
+                            <p class="text-sm text-black">{{ number_format($entrepot->capacite_stockage, 0, ',', ' ') }}</p>
+                        </div>
+                        <i class="fas fa-cubes text-orange-600"></i>
                     </div>
-                    <i class="fas fa-cubes text-orange-600"></i>
-                </div>
 
                 <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                     <div>

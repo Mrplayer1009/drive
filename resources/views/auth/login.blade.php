@@ -45,7 +45,7 @@
                         Type de compte
                     </label>
                     <select id="type" name="type" required class="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm">
-                        <option value="">Sélectionnez un type</option>
+                        <option value="client">Client</option>
                         <option value="admin">Administrateur</option>
                         <option value="franchise">Franchisé</option>
                     </select>
@@ -78,7 +78,6 @@
             </div>
         </form>
 
-        <!-- Informations de connexion pour les tests -->
         <div class="mt-8 p-4 bg-gray-50 rounded-lg">
             <h3 class="text-sm font-medium text-black mb-2">Informations de test :</h3>
             <div class="text-xs text-black space-y-1">

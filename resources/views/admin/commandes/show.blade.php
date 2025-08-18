@@ -12,6 +12,12 @@
                 <p class="text-black">Commande #{{ $commande->id }} - {{ $commande->franchise->nom_complet }}</p>
             </div>
             <div class="flex space-x-2">
+                @if(in_array($commande->statut, ['validee', 'livree']))
+                <a href="{{ route('admin.commandes.download', $commande) }}" class="bg-purple-600 hover:bg-purple-700 text-black px-4 py-2 rounded-lg transition duration-300">
+                    <i class="fas fa-download mr-2"></i>
+                    Télécharger PDF
+                </a>
+                @endif
                 <a href="{{ route('admin.commandes.edit', $commande) }}" class="bg-orange-600 hover:bg-orange-700 text-black px-4 py-2 rounded-lg transition duration-300">
                     <i class="fas fa-edit mr-2"></i>
                     Modifier

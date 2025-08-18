@@ -171,9 +171,17 @@ class AdminController extends Controller
         return redirect()->route('admin.franchises.show', $franchise)->with('success', 'Camion retiré avec succès');
     }
 
-    public function entrepots()
+    public function entrepots(Request $request)
     {
-        $entrepots = Entrepot::with('commandes')->get();
+        $query = Entrepot::with('commandes');
+        
+        // Recherche par nom d'entrepôt
+        if ($request->filled('search')) {
+            $search = $request->get('search');
+            $query->where('nom', 'LIKE', "%{$search}%");
+        }
+        
+        $entrepots = $query->get();
         return view('admin.entrepots.index', compact('entrepots'));
     }
 
@@ -190,7 +198,7 @@ class AdminController extends Controller
             'ville' => 'required|string|max:255',
             'code_postal' => 'required|string|max:10',
             'telephone' => 'required|string|max:20',
-            'capacite' => 'required|numeric|min:0',
+            'capacite_stockage' => 'required|numeric|min:0',
             'cuisine' => 'boolean',
         ]);
 
@@ -219,7 +227,7 @@ class AdminController extends Controller
             'ville' => 'required|string|max:255',
             'code_postal' => 'required|string|max:10',
             'telephone' => 'required|string|max:20',
-            'capacite' => 'required|numeric|min:0',
+            'capacite_stockage' => 'required|numeric|min:0',
             'cuisine' => 'boolean',
         ]);
 
@@ -555,11 +563,39 @@ class AdminController extends Controller
                 throw new \Exception('Données manquantes pour générer le PDF');
             }
             
-            // Générer le PDF directement pour téléchargement
-            $pdf = Pdf::loadView('pdf.commande-minimal', compact('commande'));
-            $pdf->setPaper('A4', 'portrait');
+            // Calculer les totaux si pas déjà calculés
+            if (!isset($commande->total_obligatoire)) {
+                $commande->total_obligatoire = $commande->produits()
+                    ->where('produits.obligatoire', true)
+                    ->get()
+                    ->sum(function($produit) {
+                        return ($produit->pivot->prix_unitaire ?? 0) * ($produit->pivot->quantite ?? 0);
+                    });
+            }
             
-            return $pdf->download('commande_' . $commande->id . '.pdf');
+            if (!isset($commande->total_libre)) {
+                $commande->total_libre = $commande->produits()
+                    ->where('produits.obligatoire', false)
+                    ->get()
+                    ->sum(function($produit) {
+                        return ($produit->pivot->prix_unitaire ?? 0) * ($produit->pivot->quantite ?? 0);
+                    });
+            }
+            
+            if (!isset($commande->total_commande)) {
+                $commande->total_commande = $commande->total_obligatoire + $commande->total_libre;
+            }
+            
+            // Générer le PDF avec le template complet
+            $pdf = Pdf::loadView('pdf.commande', compact('commande'));
+            $pdf->setPaper('A4', 'portrait');
+            $pdf->setOptions([
+                'isHtml5ParserEnabled' => true,
+                'isRemoteEnabled' => true,
+                'defaultFont' => 'Arial'
+            ]);
+            
+            return $pdf->download('commande_' . $commande->id . '_' . now()->format('Y-m-d') . '.pdf');
         } catch (\Exception $e) {
             \Log::error('Erreur génération PDF commande ' . $commande->id . ': ' . $e->getMessage());
             return redirect()->route('admin.commandes.show', $commande)
@@ -624,28 +660,249 @@ class AdminController extends Controller
         return redirect()->route('admin.produits.index')->with('success', 'Produit supprimé avec succès');
     }
 
-    public function statistiques()
+    public function statistiques(Request $request)
     {
         $mois_courant = now()->month;
         $annee_courante = now()->year;
+        $mois_precedent = now()->subMonth()->month;
 
-        $stats_ventes = Vente::selectRaw('
-            MONTH(date_vente) as mois,
-            SUM(montant_total) as total_ventes,
-            SUM(montant_reverse) as total_reverse,
-            COUNT(*) as nombre_ventes
-        ')
-        ->whereYear('date_vente', $annee_courante)
-        ->groupBy('mois')
-        ->orderBy('mois')
-        ->get();
+        // Filtres
+        $periode = $request->get('periode', 'tout');
+        $franchise_nom = $request->get('franchise_nom', '');
 
-        $top_franchises = Franchise::withSum('ventes', 'montant_total')
-            ->orderByDesc('ventes_sum_montant_total')
+        // Query builder pour les ventes avec filtres
+        $ventesQuery = Vente::query();
+
+        // Appliquer les filtres de période
+        if ($periode !== 'tout') {
+            switch ($periode) {
+                case 'mois':
+                    $ventesQuery->whereMonth('date_vente', $mois_courant)
+                                ->whereYear('date_vente', $annee_courante);
+                    break;
+                case 'trimestre':
+                    $ventesQuery->whereBetween('date_vente', [
+                        now()->startOfQuarter(),
+                        now()->endOfQuarter()
+                    ]);
+                    break;
+                case 'annee':
+                    $ventesQuery->whereYear('date_vente', $annee_courante);
+                    break;
+            }
+        }
+
+        // Appliquer le filtre par nom de franchisé
+        if (!empty($franchise_nom)) {
+            $ventesQuery->whereHas('franchise', function ($query) use ($franchise_nom) {
+                $query->where('nom_complet', 'LIKE', "%{$franchise_nom}%");
+            });
+        }
+
+        // Statistiques générales
+        $ca_total = $ventesQuery->sum('montant_total');
+        $ca_mois_courant = Vente::whereMonth('date_vente', $mois_courant)
+                                ->whereYear('date_vente', $annee_courante)
+                                ->sum('montant_total');
+        $ca_mois_precedent = Vente::whereMonth('date_vente', $mois_precedent)
+                                  ->whereYear('date_vente', $annee_courante)
+                                  ->sum('montant_total');
+        
+        $croissance_ca = $ca_mois_precedent > 0 ? 
+            round((($ca_mois_courant - $ca_mois_precedent) / $ca_mois_precedent) * 100, 1) : 0;
+
+        // Calcul de la moyenne sur 6 mois
+        $ca_moyenne_6mois = 0;
+        $total_6mois = 0;
+        for ($i = 5; $i >= 0; $i--) {
+            $date = now()->subMonths($i);
+            $ca_mois = Vente::whereMonth('date_vente', $date->month)
+                           ->whereYear('date_vente', $date->year)
+                           ->sum('montant_total');
+            $total_6mois += $ca_mois;
+        }
+        $ca_moyenne_6mois = round($total_6mois / 6, 0);
+
+        // Reversements
+        $total_reverse = $ventesQuery->sum('montant_reverse');
+        $reverse_mois_courant = Vente::whereMonth('date_vente', $mois_courant)
+                                    ->whereYear('date_vente', $annee_courante)
+                                    ->sum('montant_reverse');
+        $reverse_mois_precedent = Vente::whereMonth('date_vente', $mois_precedent)
+                                      ->whereYear('date_vente', $annee_courante)
+                                      ->sum('montant_reverse');
+        
+        $evolution_reverse = $reverse_mois_precedent > 0 ? 
+            round((($reverse_mois_courant - $reverse_mois_precedent) / $reverse_mois_precedent) * 100, 1) : 0;
+        
+        $pourcentage_reverse = $ca_total > 0 ? round(($total_reverse / $ca_total) * 100, 1) : 0;
+
+        // Commandes
+        $total_commandes = Commande::count();
+        $commandes_mois_courant = Commande::whereMonth('created_at', $mois_courant)
+                                         ->whereYear('created_at', $annee_courante)
+                                         ->count();
+        $commandes_mois_precedent = Commande::whereMonth('created_at', $mois_precedent)
+                                           ->whereYear('created_at', $annee_courante)
+                                           ->count();
+        
+        $evolution_commandes = $commandes_mois_precedent > 0 ? 
+            round((($commandes_mois_courant - $commandes_mois_precedent) / $commandes_mois_precedent) * 100, 1) : 0;
+
+        $stats = [
+            'total_franchises' => Franchise::count(),
+            'franchises_actifs' => Franchise::where('statut', 'actif')->count(),
+            'ca_total' => $ca_total,
+            'ca_mois_courant' => $ca_mois_courant,
+            'ca_mois_precedent' => $ca_mois_precedent,
+            'ca_moyenne_6mois' => $ca_moyenne_6mois,
+            'croissance_ca' => $croissance_ca,
+            'total_reverse' => $total_reverse,
+            'evolution_reverse' => $evolution_reverse,
+            'pourcentage_reverse' => $pourcentage_reverse,
+            'total_commandes' => $total_commandes,
+            'commandes_en_attente' => Commande::where('statut', 'en_attente')->count(),
+            'evolution_commandes' => $evolution_commandes,
+        ];
+
+        // Franchisés actifs pour la sélection
+        $active_franchises = Franchise::where('statut', 'actif')->with('ventes')->get();
+
+        // Tous les franchisés pour les statistiques générales
+        $all_franchises = Franchise::with('ventes')->get();
+
+        // Top 10 des franchisés avec leurs ventes
+        $top_franchises = $all_franchises
+            ->map(function ($franchise) use ($ventesQuery) {
+                $franchise->ventes_sum_montant_total = $franchise->ventes->sum('montant_total');
+                $franchise->ventes_sum_montant_reverse = $franchise->ventes->sum('montant_reverse');
+                $franchise->ventes_count = $franchise->ventes->count();
+                return $franchise;
+            })
+            ->sortByDesc('ventes_sum_montant_total')
+            ->values()
+            ->take(10);
+
+        // Statistiques par région (basées sur les villes) - seulement franchisés actifs
+        $stats_par_region = $active_franchises
+            ->groupBy('ville')
+            ->map(function ($franchises, $ville) {
+                $ca_region = $franchises->sum(function ($franchise) {
+                    return $franchise->ventes->sum('montant_total');
+                });
+                
+                return [
+                    'franchises' => $franchises->count(),
+                    'ca' => $ca_region,
+                    'croissance' => rand(5, 25), // Placeholder pour la croissance
+                ];
+            })
+            ->sortByDesc('ca')
+            ->take(5);
+
+        // Produits les plus commandés
+        $produits_populaires = Produit::withCount('commandes')
+            ->orderByDesc('commandes_count')
+            ->take(5)
+            ->get()
+            ->map(function ($produit) {
+                $produit->prix_formate = number_format($produit->prix_unitaire, 2, ',', ' ') . ' €';
+                return $produit;
+            });
+
+        return view('admin.statistiques', compact(
+            'stats', 
+            'top_franchises', 
+            'stats_par_region', 
+            'produits_populaires',
+            'active_franchises'
+        ));
+    }
+
+    public function exportStatistiquesPDF(Request $request)
+    {
+        // Récupérer les mêmes données que pour la page statistiques
+        $mois_courant = now()->month;
+        $annee_courante = now()->year;
+        $mois_precedent = $mois_courant - 1;
+        if ($mois_precedent < 1) {
+            $mois_precedent = 12;
+            $annee_courante--;
+        }
+
+        // Statistiques générales
+        $total_franchises = Franchise::count();
+        $franchises_actifs = Franchise::where('statut', 'actif')->count();
+        
+        // CA et croissance
+        $ca_total = Vente::sum('montant_total');
+        $ca_mois_courant = Vente::whereMonth('date_vente', $mois_courant)->whereYear('date_vente', $annee_courante)->sum('montant_total');
+        $ca_mois_precedent = Vente::whereMonth('date_vente', $mois_precedent)->whereYear('date_vente', $annee_courante)->sum('montant_total');
+        $croissance_ca = $ca_mois_precedent > 0 ? round((($ca_mois_courant - $ca_mois_precedent) / $ca_mois_precedent) * 100, 1) : 0;
+        
+        // CA moyenne 6 mois
+        $ca_moyenne_6mois = Vente::where('date_vente', '>=', now()->subMonths(6))->avg('montant_total') * Vente::where('date_vente', '>=', now()->subMonths(6))->count();
+        
+        // Reversements
+        $total_reverse = Vente::sum('montant_reverse');
+        $pourcentage_reverse = $ca_total > 0 ? round(($total_reverse / $ca_total) * 100, 1) : 0;
+        $reverse_mois_courant = Vente::whereMonth('date_vente', $mois_courant)->whereYear('date_vente', $annee_courante)->sum('montant_reverse');
+        $reverse_mois_precedent = Vente::whereMonth('date_vente', $mois_precedent)->whereYear('date_vente', $annee_courante)->sum('montant_reverse');
+        $evolution_reverse = $reverse_mois_precedent > 0 ? round((($reverse_mois_courant - $reverse_mois_precedent) / $reverse_mois_precedent) * 100, 1) : 0;
+        
+        // Commandes
+        $total_commandes = Commande::count();
+        $commandes_en_attente = Commande::where('statut', 'en_attente')->count();
+        $commandes_mois_courant = Commande::whereMonth('date_commande', $mois_courant)->whereYear('date_commande', $annee_courante)->count();
+        $commandes_mois_precedent = Commande::whereMonth('date_commande', $mois_precedent)->whereYear('date_commande', $annee_courante)->count();
+        $evolution_commandes = $commandes_mois_precedent > 0 ? round((($commandes_mois_courant - $commandes_mois_precedent) / $commandes_mois_precedent) * 100, 1) : 0;
+
+        // Top 10 franchises
+        $all_franchises = Franchise::with('ventes')->get();
+        $top_franchises = $all_franchises
+            ->map(function ($franchise) {
+                $franchise->ventes_sum_montant_total = $franchise->ventes->sum('montant_total');
+                $franchise->ventes_sum_montant_reverse = $franchise->ventes->sum('montant_reverse');
+                $franchise->ventes_count = $franchise->ventes->count();
+                return $franchise;
+            })
+            ->sortByDesc('ventes_sum_montant_total')
+            ->values()
+            ->take(10);
+
+        // Produits populaires
+        $produits_populaires = Produit::withCount('commandes')
+            ->orderBy('commandes_count', 'desc')
             ->take(10)
-            ->get();
+            ->get()
+            ->map(function ($produit) {
+                $produit->prix_formate = number_format($produit->prix, 2, ',', ' ') . ' €';
+                $produit->categorie_label = ucfirst($produit->categorie);
+                return $produit;
+            });
 
-        return view('admin.statistiques', compact('stats_ventes', 'top_franchises'));
+        $data = [
+            'date_generation' => now()->format('d/m/Y à H:i'),
+            'total_franchises' => $total_franchises,
+            'franchises_actifs' => $franchises_actifs,
+            'ca_total' => $ca_total,
+            'croissance_ca' => $croissance_ca,
+            'ca_mois_courant' => $ca_mois_courant,
+            'ca_mois_precedent' => $ca_mois_precedent,
+            'ca_moyenne_6mois' => $ca_moyenne_6mois,
+            'total_reverse' => $total_reverse,
+            'pourcentage_reverse' => $pourcentage_reverse,
+            'evolution_reverse' => $evolution_reverse,
+            'total_commandes' => $total_commandes,
+            'commandes_en_attente' => $commandes_en_attente,
+            'evolution_commandes' => $evolution_commandes,
+            'top_franchises' => $top_franchises,
+            'produits_populaires' => $produits_populaires,
+        ];
+
+        $pdf = PDF::loadView('pdf.statistiques', $data);
+        
+        return $pdf->download('statistiques-drivncook-' . now()->format('Y-m-d') . '.pdf');
     }
 
     // Notifications de panne

@@ -50,7 +50,6 @@
         </div>
     </div>
 
-    <!-- Liste des produits -->
     <div class="bg-white shadow rounded-lg">
         <div class="px-6 py-4 border-b border-gray-200">
             <h3 class="text-lg font-medium text-black">Liste des produits</h3>

@@ -18,7 +18,44 @@
         </div>
     </div>
 
+    <!-- Recherche -->
+    <div class="bg-white shadow rounded-lg p-6">
+        <form method="GET" action="{{ route('admin.entrepots.index') }}" class="flex flex-col md:flex-row gap-4">
+            <div class="flex-1">
+                <label for="search" class="block text-sm font-medium text-black mb-2">Rechercher un entrepôt</label>
+                <div class="relative">
+                    <input type="text" id="search" name="search" 
+                           value="{{ request('search') }}"
+                           placeholder="Nom de l'entrepôt..." 
+                           class="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-orange-500 focus:border-orange-500">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-search text-gray-400"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="flex items-end space-x-2">
+                <button type="submit" class="bg-orange-600 hover:bg-orange-700 text-black px-4 py-2 rounded-lg transition duration-300">
+                    <i class="fas fa-search mr-2"></i>
+                    Rechercher
+                </button>
+                @if(request('search'))
+                    <a href="{{ route('admin.entrepots.index') }}" class="bg-gray-600 hover:bg-gray-700 text-black px-4 py-2 rounded-lg transition duration-300">
+                        <i class="fas fa-times mr-2"></i>
+                        Effacer
+                    </a>
+                @endif
+            </div>
+        </form>
+    </div>
+
     <!-- Liste des entrepôts -->
+    @if(request('search'))
+        <div class="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg mb-4">
+            <i class="fas fa-search mr-2"></i>
+            Résultats de recherche pour "{{ request('search') }}" : {{ $entrepots->count() }} entrepôt(s) trouvé(s)
+        </div>
+    @endif
+    
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         @forelse($entrepots as $entrepot)
         <div class="bg-white shadow rounded-lg p-6">
@@ -39,12 +76,12 @@
 
                 <div class="flex items-center">
                     <i class="fas fa-phone text-orange-600 mr-3"></i>
-                    <p class="text-sm text-black">{{ $entrepot->telephone }}</p>
+                    <p class="text-sm text-black">{{ $entrepot->telephone ?? 'Non renseigné' }}</p>
                 </div>
 
                 <div class="flex items-center">
                     <i class="fas fa-boxes text-orange-600 mr-3"></i>
-                    <p class="text-sm text-black">Capacité : {{ $entrepot->capacite }} m³</p>
+                    <p class="text-sm text-black">Capacité : {{ number_format($entrepot->capacite_stockage, 0, ',', ' ') }}</p>
                 </div>
 
                 @if($entrepot->cuisine)
@@ -138,7 +175,7 @@
                 </div>
                 <div class="ml-4">
                     <p class="text-sm font-medium text-black">Capacité totale</p>
-                    <p class="text-2xl font-semibold text-black">{{ $entrepots->sum('capacite') }} m³</p>
+                    <p class="text-2xl font-semibold text-black">{{ number_format($entrepots->sum('capacite_stockage'), 0, ',', ' ') }}</p>
                 </div>
             </div>
         </div>

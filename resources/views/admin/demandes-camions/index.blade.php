@@ -45,14 +45,7 @@
             </div>
             <div>
                 <label for="franchise" class="block text-sm font-medium text-black mb-2">Franchisé</label>
-                <select id="franchise" name="franchise" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500">
-                    <option value="">Tous les franchisés</option>
-                    @foreach($franchises as $franchise)
-                    <option value="{{ $franchise->id }}" {{ request('franchise') == $franchise->id ? 'selected' : '' }}>
-                        {{ $franchise->nom_complet }}
-                    </option>
-                    @endforeach
-                </select>
+                <input type="text" id="franchise" name="franchise" value="{{ request('franchise') }}" placeholder="Nom" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500">
             </div>
         </form>
         

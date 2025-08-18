@@ -89,7 +89,7 @@
                     <label for="date_entree" class="block text-sm font-medium text-black mb-2">
                         Date d'entrée souhaitée
                     </label>
-                    <input id="date_entree" name="date_entree" type="date" required class="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-black focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm">
+                    <input id="date_entree" name="date_entree" type="date" required min="{{ date('Y-m-d') }}" class="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-black focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm">
                 </div>
                 
                 <div class="mb-4">
@@ -107,15 +107,7 @@
                 </div>
             </div>
 
-            <div class="mb-4">
-                <div class="flex items-center">
-                    <input id="terms" name="terms" type="checkbox" required class="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded">
-                    <label for="terms" class="ml-2 block text-sm text-black">
-                        J'accepte les <a href="#" class="text-orange-600 hover:text-orange-500">conditions d'utilisation</a> et la <a href="#" class="text-orange-600 hover:text-orange-500">politique de confidentialité</a>
-                    </label>
-                </div>
-            </div>
-
+          
             <div>
                 <button type="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-black bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
                     <span class="absolute left-0 inset-y-0 flex items-center pl-3">

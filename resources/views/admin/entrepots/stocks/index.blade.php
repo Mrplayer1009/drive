@@ -10,6 +10,39 @@
             <div>
                 <h1 class="text-3xl font-bold text-black mb-2">Gestion des Stocks</h1>
                 <p class="text-black">Entrepôt : {{ $entrepot->nom }}</p>
+                <div class="mt-2 flex items-center space-x-4">
+                    <div class="flex items-center">
+                        <span class="text-sm text-black">Capacité totale : {{ number_format($entrepot->capacite_stockage, 0, ',', ' ') }}</span>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="text-sm text-black">Utilisation : 
+                            @php
+                                $totalStock = $stocks->sum('quantite_stock');
+                                $pourcentageUtilisation = $entrepot->capacite_stockage > 0 ? ($totalStock / $entrepot->capacite_stockage) * 100 : 0;
+                            @endphp
+                            <span class="font-semibold {{ $pourcentageUtilisation > 80 ? 'text-red-600' : ($pourcentageUtilisation > 60 ? 'text-orange-600' : 'text-green-600') }}">
+                                {{ number_format($pourcentageUtilisation, 1) }}%
+                            </span>
+                            ({{ number_format($totalStock, 0, ',', ' ') }} / {{ number_format($entrepot->capacite_stockage, 0, ',', ' ') }})
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- Barre de progression de l'utilisation -->
+                <div class="mt-3">
+                    <div class="flex justify-between text-xs text-black mb-1">
+                        <span>0%</span>
+                        <span>100%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="h-2 rounded-full {{ $pourcentageUtilisation > 80 ? 'bg-red-500' : ($pourcentageUtilisation > 60 ? 'bg-orange-500' : 'bg-green-500') }}" 
+                             style="width: {{ min($pourcentageUtilisation, 100) }}%"></div>
+                    </div>
+                    <div class="flex justify-between text-xs text-black mt-1">
+                        <span>Vide</span>
+                        <span>Plein</span>
+                    </div>
+                </div>
             </div>
             <div class="flex space-x-2">
                 <a href="{{ route('admin.entrepots.stocks.create', $entrepot->id) }}" class="bg-orange-600 hover:bg-orange-700 text-black px-4 py-2 rounded-lg transition duration-300">

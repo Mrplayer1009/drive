@@ -44,29 +44,28 @@
                     Tableau de bord
                 </a>
                 
-                <a href="{{ route('franchise.profile') }}" class="mt-1 group flex items-center px-2 py-2 text-base font-medium rounded-md {{ request()->routeIs('franchise.profile*') ? 'bg-orange-100 text-orange-900' : 'text-black hover:bg-gray-50 hover:text-black' }}">
+                <a href="{{ route('franchise.profile') }}" class="group flex items-center px-2 py-2 text-base font-medium rounded-md {{ request()->routeIs('franchise.dashboard') ? 'bg-orange-100 text-orange-900' : 'text-black hover:bg-gray-50 hover:text-black' }}">
                     <i class="fas fa-user mr-4 text-lg"></i>
                     Mon profil
                 </a>
                 
-                <a href="{{ route('franchise.camions.index') }}" class="mt-1 group flex items-center px-2 py-2 text-base font-medium rounded-md {{ request()->routeIs('franchise.camions.*') ? 'bg-orange-100 text-orange-900' : 'text-black hover:bg-gray-50 hover:text-black' }}">
+                <a href="{{ Auth::user()->statut === 'inactif' ? '#' : route('franchise.camions.index') }}" class="mt-1 group flex items-center px-2 py-2 text-base font-medium rounded-md {{ request()->routeIs('franchise.camions.*') ? 'bg-orange-100 text-orange-900' : 'text-black hover:bg-gray-50 hover:text-black' }} {{ Auth::user()->statut === 'inactif' ? 'opacity-50 cursor-not-allowed' : '' }}">
                     <i class="fas fa-truck mr-4 text-lg"></i>
                     Mes camions
                 </a>
                 
-                <a href="{{ route('franchise.commandes.index') }}" class="mt-1 group flex items-center px-2 py-2 text-base font-medium rounded-md {{ request()->routeIs('franchise.commandes.*') ? 'bg-orange-100 text-orange-900' : 'text-black hover:bg-gray-50 hover:text-black' }}">
+                <a href="{{ Auth::user()->statut === 'inactif' ? '#' : route('franchise.commandes.index') }}" class="mt-1 group flex items-center px-2 py-2 text-base font-medium rounded-md {{ request()->routeIs('franchise.commandes.*') ? 'bg-orange-100 text-orange-900' : 'text-black hover:bg-gray-50 hover:text-black' }} {{ Auth::user()->statut === 'inactif' ? 'opacity-50 cursor-not-allowed' : '' }}">
                     <i class="fas fa-shopping-cart mr-4 text-lg"></i>
                     Mes commandes
                 </a>
                 
-                <a href="{{ route('franchise.ventes.index') }}" class="mt-1 group flex items-center px-2 py-2 text-base font-medium rounded-md {{ request()->routeIs('franchise.ventes.*') ? 'bg-orange-100 text-orange-900' : 'text-black hover:bg-gray-50 hover:text-black' }}">
+                <a href="{{ Auth::user()->statut === 'inactif' ? '#' : route('franchise.ventes.index') }}" class="mt-1 group flex items-center px-2 py-2 text-base font-medium rounded-md {{ request()->routeIs('franchise.ventes.*') ? 'bg-orange-100 text-orange-900' : 'text-black hover:bg-gray-50 hover:text-black' }} {{ Auth::user()->statut === 'inactif' ? 'opacity-50 cursor-not-allowed' : '' }}">
                     <i class="fas fa-chart-line mr-4 text-lg"></i>
                     Mes ventes
                 </a>
             </nav>
         </div>
 
-        <!-- Contenu principal -->
         <div class="flex-1 bg-gray-100">
             @if(session('success'))
                 <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded m-4">

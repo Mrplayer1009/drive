@@ -96,7 +96,18 @@
                             </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-black">
-                            {{ $franchise->camions_actifs }} camion(s)
+                            @if($franchise->camions->count() > 0)
+                                @foreach($franchise->camions->take(3) as $camion)
+                                    <div class="text-xs">
+                                        {{ $camion->immatriculation }} - {{ $camion->marque }} {{ $camion->modele }}
+                                    </div>
+                                @endforeach
+                                @if($franchise->camions->count() > 3)
+                                    <div class="text-xs text-gray-500">+{{ $franchise->camions->count() - 3 }} autre(s)</div>
+                                @endif
+                            @else
+                                <span class="text-gray-500">Aucun camion</span>
+                            @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <a href="{{ route('admin.franchises.edit', $franchise) }}" class="text-orange-600 hover:text-orange-700 mr-3">

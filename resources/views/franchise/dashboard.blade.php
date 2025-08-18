@@ -8,6 +8,19 @@
         <p class="text-black">Bienvenue {{ Auth::user()->nom_complet }}</p>
     </div>
 
+    <!-- Alerte compte inactif -->
+    @if(Auth::user()->statut === 'inactif')
+    <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-6">
+        <div class="flex items-center">
+            <i class="fas fa-exclamation-triangle mr-2"></i>
+            <div>
+                <p class="font-medium">Compte en attente d'activation</p>
+                <p class="text-sm">Votre compte est actuellement en attente de validation par l'administrateur. Vous pourrez accéder à toutes les fonctionnalités une fois votre compte activé.</p>
+            </div>
+        </div>
+    </div>
+    @endif
+
     <!-- Statistiques -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
         <div class="bg-white shadow rounded-lg p-6">
@@ -93,9 +106,15 @@
                 @endforelse
             </div>
             <div class="mt-4">
-                <a href="{{ route('franchise.ventes.index') }}" class="text-orange-600 hover:text-orange-700 text-sm font-medium">
-                    Voir toutes les ventes →
-                </a>
+                @if(Auth::user()->statut === 'inactif')
+                    <span class="text-gray-400 text-sm font-medium cursor-not-allowed">
+                        Voir toutes les ventes →
+                    </span>
+                @else
+                    <a href="{{ route('franchise.ventes.index') }}" class="text-orange-600 hover:text-orange-700 text-sm font-medium">
+                        Voir toutes les ventes →
+                    </a>
+                @endif
             </div>
         </div>
 
@@ -124,9 +143,15 @@
                 @endforelse
             </div>
             <div class="mt-4">
-                <a href="{{ route('franchise.commandes.index') }}" class="text-orange-600 hover:text-orange-700 text-sm font-medium">
-                    Voir toutes les commandes →
-                </a>
+                @if(Auth::user()->statut === 'inactif')
+                    <span class="text-gray-400 text-sm font-medium cursor-not-allowed">
+                        Voir toutes les commandes →
+                    </span>
+                @else
+                    <a href="{{ route('franchise.commandes.index') }}" class="text-orange-600 hover:text-orange-700 text-sm font-medium">
+                        Voir toutes les commandes →
+                    </a>
+                @endif
             </div>
         </div>
     </div>
@@ -151,9 +176,15 @@
             @endforeach
         </div>
         <div class="mt-4">
-            <a href="{{ route('franchise.camions.index') }}" class="text-orange-600 hover:text-orange-700 text-sm font-medium">
-                Voir tous mes camions →
-            </a>
+            @if(Auth::user()->statut === 'inactif')
+                <span class="text-gray-400 text-sm font-medium cursor-not-allowed">
+                    Voir tous mes camions →
+                </span>
+            @else
+                <a href="{{ route('franchise.camions.index') }}" class="text-orange-600 hover:text-orange-700 text-sm font-medium">
+                    Voir tous mes camions →
+                </a>
+            @endif
         </div>
     </div>
     @endif

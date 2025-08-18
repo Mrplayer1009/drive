@@ -22,10 +22,9 @@ class StockSeeder extends Seeder
         $franchises = Franchise::all();
         $produits = Produit::all();
 
-        // Ajouter des stocks aux entrepôts
+        // ajout rand de stock
         foreach ($entrepots as $entrepot) {
             foreach ($produits as $produit) {
-                // Stock aléatoire entre 50 et 200
                 $quantiteStock = rand(50, 200);
                 $stockMinimum = rand(10, 30);
 
@@ -38,10 +37,8 @@ class StockSeeder extends Seeder
             }
         }
 
-        // Ajouter des stocks aux franchises (moins que les entrepôts)
         foreach ($franchises as $franchise) {
             foreach ($produits as $produit) {
-                // Stock aléatoire entre 10 et 50
                 $quantiteStock = rand(10, 50);
                 $stockMinimum = rand(5, 15);
 

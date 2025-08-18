@@ -81,7 +81,6 @@ class AuthController extends Controller
             'code_postal' => 'required|string',
             'date_entree' => 'required|date',
             'password' => 'required|string|min:8|confirmed',
-            'terms' => 'required|accepted',
         ]);
 
         $franchise = Franchise::create([

@@ -95,6 +95,7 @@ Route::prefix('admin')->name('admin.')->middleware('auth:admin')->group(function
     
     // Statistiques
     Route::get('/statistiques', [AdminController::class, 'statistiques'])->name('statistiques');
+    Route::get('/statistiques/export-pdf', [AdminController::class, 'exportStatistiquesPDF'])->name('statistiques.export-pdf');
     
     // Notifications de panne
     Route::get('/notifications-pannes', [AdminController::class, 'notificationsPannes'])->name('notifications-pannes.index');
