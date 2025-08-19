@@ -129,9 +129,28 @@ class AdminController extends Controller
         return redirect()->route('admin.franchises.index')->with('success', 'Franchisé mis à jour avec succès');
     }
 
-    public function franchisesActivate(Franchise $franchise)
+    public function franchisesActivate(Request $request, Franchise $franchise)
     {
+        // Activer le franchisé
         $franchise->update(['statut' => 'actif']);
+        
+        // Attribuer les camions sélectionnés
+        if ($request->has('camions') && is_array($request->camions)) {
+            foreach ($request->camions as $camionId) {
+                $camion = Camion::find($camionId);
+                if ($camion && $camion->statut === 'disponible') {
+                    // Attribuer le camion au franchisé
+                    $franchise->camions()->attach($camion->id, [
+                        'date_attribution' => now(),
+                        'statut' => 'actif'
+                    ]);
+                    
+                    // Mettre à jour le statut du camion
+                    $camion->update(['statut' => 'en_utilisation']);
+                }
+            }
+        }
+        
         return redirect()->route('admin.franchises.index')->with('success', 'Franchisé activé avec succès');
     }
 
@@ -148,6 +167,11 @@ class AdminController extends Controller
             return back()->withErrors(['camion_id' => 'Ce camion n\'est pas disponible.']);
         }
 
+        // Vérifier que le franchisé est actif
+        if ($franchise->statut !== 'actif') {
+            return back()->withErrors(['franchise' => 'Seuls les franchisés actifs peuvent recevoir des camions.']);
+        }
+
         // Assigner le camion au franchisé
         $franchise->camions()->attach($camion->id, [
             'date_attribution' => now(),
@@ -157,7 +181,7 @@ class AdminController extends Controller
         // Mettre à jour le statut du camion
         $camion->update(['statut' => 'en_utilisation']);
 
-        return redirect()->route('admin.franchises.show', $franchise)->with('success', 'Camion assigné avec succès');
+        return redirect()->route('admin.franchises.index')->with('success', 'Camion assigné avec succès au franchisé ' . $franchise->nom_complet);
     }
 
     public function franchisesRemoveCamion(Franchise $franchise, Camion $camion)
@@ -1123,5 +1147,31 @@ class AdminController extends Controller
 
         return redirect()->route('admin.demandes-camions.index')
                         ->with('success', 'Demande de camion créée avec succès.');
+    }
+
+    public function franchisesCamionsDisponibles(Franchise $franchise)
+    {
+        $camions = Camion::where('statut', 'disponible')
+            ->select('id', 'immatriculation', 'marque', 'modele', 'annee', 'ville_localisation')
+            ->get();
+        
+        return response()->json(['camions' => $camions]);
+    }
+
+    public function franchisesDestroy(Franchise $franchise)
+    {
+        try {
+            // Retirer tous les camions attribués
+            $franchise->camions()->detach();
+            
+            // Supprimer le franchisé
+            $franchise->delete();
+            
+            return redirect()->route('admin.franchises.index')
+                ->with('success', 'Franchisé supprimé avec succès');
+        } catch (\Exception $e) {
+            return redirect()->route('admin.franchises.index')
+                ->with('error', 'Erreur lors de la suppression du franchisé : ' . $e->getMessage());
+        }
     }
 } 

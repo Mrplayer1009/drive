@@ -38,8 +38,10 @@ Route::prefix('admin')->name('admin.')->middleware('auth:admin')->group(function
     Route::get('/franchises/{franchise}/edit', [AdminController::class, 'franchisesEdit'])->name('franchises.edit');
     Route::put('/franchises/{franchise}', [AdminController::class, 'franchisesUpdate'])->name('franchises.update');
     Route::post('/franchises/{franchise}/activate', [AdminController::class, 'franchisesActivate'])->name('franchises.activate');
+    Route::get('/franchises/{franchise}/camions-disponibles', [AdminController::class, 'franchisesCamionsDisponibles'])->name('franchises.camions-disponibles');
     Route::post('/franchises/{franchise}/assign-camion', [AdminController::class, 'franchisesAssignCamion'])->name('franchises.assign-camion');
     Route::delete('/franchises/{franchise}/remove-camion/{camion}', [AdminController::class, 'franchisesRemoveCamion'])->name('franchises.remove-camion');
+    Route::delete('/franchises/{franchise}', [AdminController::class, 'franchisesDestroy'])->name('franchises.destroy');
     
     // Gestion des entrepôts
     Route::get('/entrepots', [AdminController::class, 'entrepots'])->name('entrepots.index');

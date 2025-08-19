@@ -210,22 +210,31 @@
 
     <!-- Modal d'assignation de franchisé -->
     <div id="assignModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white">
             <div class="mt-3">
                 <h3 class="text-lg font-medium text-black mb-4">Assigner un franchisé</h3>
                 <form id="assignForm" method="POST">
                     @csrf
+                                    <div class="mb-6">
+                    <h4 class="text-md font-medium text-black mb-3">Franchisés disponibles</h4>
                     <div class="mb-4">
-                        <label for="franchise_id" class="block text-sm font-medium text-black mb-2">Sélectionner un franchisé</label>
-                        <select id="franchise_id" name="franchise_id" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500">
-                            <option value="">Choisir un franchisé...</option>
-                            @foreach($franchises ?? [] as $franchise)
-                                <option value="{{ $franchise->id }}">
-                                    {{ $franchise->nom_complet }} ({{ $franchise->ville }})
-                                </option>
-                            @endforeach
-                        </select>
+                        <input type="text" id="searchFranchises" placeholder="Rechercher par nom ou ville..." class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500">
                     </div>
+                    <div id="franchisesList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-64 overflow-y-auto">
+                        @foreach($franchises ?? [] as $franchise)
+                            <div class="franchise-option border border-gray-200 rounded-lg p-3" data-franchise-id="{{ $franchise->id }}" data-franchise-name="{{ $franchise->nom_complet }}" data-franchise-ville="{{ $franchise->ville }}">
+                                <div class="flex items-center space-x-3">
+                                    <input type="radio" name="franchise_id" value="{{ $franchise->id }}" id="franchise_{{ $franchise->id }}" class="rounded border-gray-300 text-orange-600 focus:ring-orange-500" required>
+                                    <label for="franchise_{{ $franchise->id }}" class="flex-1 cursor-pointer">
+                                        <div class="font-medium text-black">{{ $franchise->nom_complet }}</div>
+                                        <div class="text-sm text-gray-600">{{ $franchise->ville }}</div>
+                                        <div class="text-xs text-gray-500">{{ $franchise->email }}</div>
+                                    </label>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
                     <div class="flex justify-end space-x-2">
                         <button type="button" onclick="closeAssignModal()" class="bg-gray-600 hover:bg-gray-700 text-black px-4 py-2 rounded text-sm">
                             Annuler
@@ -243,11 +252,54 @@
         function openAssignModal(camionId) {
             document.getElementById('assignForm').action = `/admin/camions/${camionId}/assign-franchise`;
             document.getElementById('assignModal').classList.remove('hidden');
+            
+            // Réinitialiser la recherche et la sélection
+            document.getElementById('searchFranchises').value = '';
+            document.querySelectorAll('input[name="franchise_id"]').forEach(radio => {
+                radio.checked = false;
+            });
+            afficherTousLesFranchises();
         }
         
         function closeAssignModal() {
             document.getElementById('assignModal').classList.add('hidden');
         }
+        
+        // Fonction pour afficher tous les franchisés
+        function afficherTousLesFranchises() {
+            const options = document.querySelectorAll('.franchise-option');
+            options.forEach(option => {
+                option.style.display = 'block';
+            });
+        }
+        
+        // Fonction pour rechercher les franchisés
+        function rechercherFranchises(searchTerm) {
+            const options = document.querySelectorAll('.franchise-option');
+            const searchLower = searchTerm.toLowerCase();
+            
+            options.forEach(option => {
+                const nom = option.getAttribute('data-franchise-name').toLowerCase();
+                const ville = option.getAttribute('data-franchise-ville').toLowerCase();
+                
+                if (nom.includes(searchLower) || ville.includes(searchLower)) {
+                    option.style.display = 'block';
+                } else {
+                    option.style.display = 'none';
+                }
+            });
+        }
+        
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Recherche de franchisés
+            const searchFranchises = document.getElementById('searchFranchises');
+            if (searchFranchises) {
+                searchFranchises.addEventListener('input', function() {
+                    rechercherFranchises(this.value);
+                });
+            }
+        });
     </script>
 </div>
 @endsection 

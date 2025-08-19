@@ -66,11 +66,13 @@
                     </label>
                 </div>
 
-                <!-- SChoisir le camion -->
+                <!-- Sélection du camion de remplacement -->
                 <div id="selection_camion_remplacement" class="mb-4 hidden">
-                    <label for="camion_remplacement" class="block text-sm font-medium text-black mb-2">Camion de remplacement <span class="text-red-500">*</span></label>
-                    <select id="camion_remplacement" name="camion_remplacement" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500">
-                        <option value="">Choisir un camion...</option>
+                    <h4 class="text-md font-medium text-black mb-3">Camions disponibles pour remplacement</h4>
+                    <div class="mb-4">
+                        <input type="text" id="searchCamionsRemplacement" placeholder="Rechercher par modèle ou matricule..." class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500">
+                    </div>
+                    <div id="camionsRemplacementList" class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-64 overflow-y-auto">
                         @php
                             $camionsDisponibles = \App\Models\Camion::where('statut', 'disponible')->get();
                             $camionsProches = $camionsDisponibles->filter(function($camion) use ($notification) {
@@ -79,25 +81,35 @@
                         @endphp
                         
                         @if($camionsProches->count() > 0)
-                            <optgroup label="Camions disponibles dans la même ville ({{ $notification->franchise->ville }})">
-                                @foreach($camionsProches as $camion)
-                                <option value="{{ $camion->id }}">
-                                    {{ $camion->immatriculation }} - {{ $camion->marque }} {{ $camion->modele }} ({{ $camion->ville_localisation }})
-                                </option>
-                                @endforeach
-                            </optgroup>
+                            @foreach($camionsProches as $camion)
+                            <div class="camion-option border border-green-200 rounded-lg p-3 bg-green-50" data-camion-id="{{ $camion->id }}" data-camion-immatriculation="{{ $camion->immatriculation }}" data-camion-modele="{{ $camion->modele }}" data-camion-marque="{{ $camion->marque }}">
+                                <div class="flex items-center space-x-3">
+                                    <input type="radio" name="camion_remplacement" value="{{ $camion->id }}" id="camion_remplacement_{{ $camion->id }}" class="rounded border-gray-300 text-orange-600 focus:ring-orange-500" required>
+                                    <label for="camion_remplacement_{{ $camion->id }}" class="flex-1 cursor-pointer">
+                                        <div class="font-medium text-black">{{ $camion->immatriculation }}</div>
+                                        <div class="text-sm text-gray-600">{{ $camion->marque }} {{ $camion->modele }}</div>
+                                        <div class="text-xs text-green-600 font-medium">{{ $camion->ville_localisation }} (Proche)</div>
+                                    </label>
+                                </div>
+                            </div>
+                            @endforeach
                         @endif
                         
-                        @if($camionsDisponibles->count() > 0)
-                            <optgroup label="Tous les camions disponibles">
-                                @foreach($camionsDisponibles as $camion)
-                                <option value="{{ $camion->id }}">
-                                    {{ $camion->immatriculation }} - {{ $camion->marque }} {{ $camion->modele }} ({{ $camion->ville_localisation }})
-                                </option>
-                                @endforeach
-                            </optgroup>
-                        @endif
-                    </select>
+                        @foreach($camionsDisponibles as $camion)
+                            @if(!$camionsProches->contains($camion))
+                            <div class="camion-option border border-gray-200 rounded-lg p-3" data-camion-id="{{ $camion->id }}" data-camion-immatriculation="{{ $camion->immatriculation }}" data-camion-modele="{{ $camion->modele }}" data-camion-marque="{{ $camion->marque }}">
+                                <div class="flex items-center space-x-3">
+                                    <input type="radio" name="camion_remplacement" value="{{ $camion->id }}" id="camion_remplacement_{{ $camion->id }}" class="rounded border-gray-300 text-orange-600 focus:ring-orange-500" required>
+                                    <label for="camion_remplacement_{{ $camion->id }}" class="flex-1 cursor-pointer">
+                                        <div class="font-medium text-black">{{ $camion->immatriculation }}</div>
+                                        <div class="text-sm text-gray-600">{{ $camion->marque }} {{ $camion->modele }}</div>
+                                        <div class="text-xs text-gray-500">{{ $camion->ville_localisation }}</div>
+                                    </label>
+                                </div>
+                            </div>
+                            @endif
+                        @endforeach
+                    </div>
                     
                     @if($camionsDisponibles->count() === 0)
                         <p class="text-sm text-red-600 mt-2">Aucun camion disponible actuellement</p>
@@ -235,7 +247,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const mettreMaintenanceCheckbox = document.getElementById('mettre_camion_maintenance');
     const attribuerRemplacementCheckbox = document.getElementById('attribuer_remplacement');
     const selectionCamionDiv = document.getElementById('selection_camion_remplacement');
-    const camionRemplacementSelect = document.getElementById('camion_remplacement');
+    const searchCamionsRemplacement = document.getElementById('searchCamionsRemplacement');
     
     // Si on met en maintenance, cocher automatiquement la case
     statutSelect.addEventListener('change', function() {
@@ -248,13 +260,56 @@ document.addEventListener('DOMContentLoaded', function() {
     attribuerRemplacementCheckbox.addEventListener('change', function() {
         if (this.checked) {
             selectionCamionDiv.classList.remove('hidden');
-            camionRemplacementSelect.required = true;
+            // Réinitialiser la recherche et la sélection
+            if (searchCamionsRemplacement) {
+                searchCamionsRemplacement.value = '';
+            }
+            document.querySelectorAll('input[name="camion_remplacement"]').forEach(radio => {
+                radio.checked = false;
+            });
+            afficherTousLesCamions();
         } else {
             selectionCamionDiv.classList.add('hidden');
-            camionRemplacementSelect.required = false;
-            camionRemplacementSelect.value = '';
+            document.querySelectorAll('input[name="camion_remplacement"]').forEach(radio => {
+                radio.checked = false;
+            });
         }
     });
+    
+    // Fonction pour afficher tous les camions
+    function afficherTousLesCamions() {
+        const options = document.querySelectorAll('.camion-option');
+        options.forEach(option => {
+            option.style.display = 'block';
+        });
+    }
+    
+    // Fonction pour rechercher les camions
+    function rechercherCamions(searchTerm) {
+        const options = document.querySelectorAll('.camion-option');
+        const searchLower = searchTerm.toLowerCase();
+        
+        options.forEach(option => {
+            const immatriculation = option.getAttribute('data-camion-immatriculation').toLowerCase();
+            const modele = option.getAttribute('data-camion-modele').toLowerCase();
+            const marque = option.getAttribute('data-camion-marque').toLowerCase();
+            
+            if (immatriculation.includes(searchLower) || 
+                modele.includes(searchLower) || 
+                marque.includes(searchLower)) {
+                option.style.display = 'block';
+            } else {
+                option.style.display = 'none';
+            }
+        });
+    }
+    
+    // Event listener pour la recherche de camions
+    if (searchCamionsRemplacement) {
+        searchCamionsRemplacement.addEventListener('input', function() {
+            rechercherCamions(this.value);
+        });
+    }
 });
 </script>
 @endsection 

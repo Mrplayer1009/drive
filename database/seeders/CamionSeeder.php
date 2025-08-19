@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Camion;
+use App\Models\Franchise;
 use Illuminate\Database\Seeder;
 
 class CamionSeeder extends Seeder
@@ -28,7 +29,7 @@ class CamionSeeder extends Seeder
                 'marque' => 'Renault',
                 'modele' => 'Master',
                 'annee' => 2021,
-                'statut' => 'en_utilisation',
+                'statut' => 'disponible',
                 'ville_localisation' => 'Paris',
                 'latitude' => 48.8566,
                 'longitude' => 2.3522,
@@ -80,7 +81,7 @@ class CamionSeeder extends Seeder
                 'marque' => 'Mercedes',
                 'modele' => 'Vito',
                 'annee' => 2023,
-                'statut' => 'en_utilisation',
+                'statut' => 'disponible',
                 'ville_localisation' => 'Paris',
                 'latitude' => 48.8566,
                 'longitude' => 2.3522,
@@ -90,8 +91,32 @@ class CamionSeeder extends Seeder
             ],
         ];
 
-        foreach ($camions as $camion) {
-            Camion::create($camion);
+        foreach ($camions as $camionData) {
+            // Créer le camion d'abord
+            $camion = Camion::create($camionData);
+            
+            // Vérifier si le camion doit être attribué à un franchisé
+            if (str_contains($camionData['notes'], 'Camion attribué à')) {
+                // Extraire le nom du franchisé des notes
+                preg_match('/Camion attribué à (.+)$/', $camionData['notes'], $matches);
+                if (isset($matches[1])) {
+                    $nomFranchise = trim($matches[1]);
+                    
+                    // Chercher le franchisé par nom complet
+                    $franchise = Franchise::whereRaw("CONCAT(prenom, ' ', nom) = ?", [$nomFranchise])->first();
+                    
+                    if ($franchise) {
+                        // Attribuer le camion au franchisé via la table pivot
+                        $camion->franchises()->attach($franchise->id, [
+                            'date_attribution' => now(),
+                            'statut' => 'actif'
+                        ]);
+                        
+                        // Mettre à jour le statut du camion
+                        $camion->update(['statut' => 'en_utilisation']);
+                    }
+                }
+            }
         }
     }
-} 
+}
