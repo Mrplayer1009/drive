@@ -12,6 +12,7 @@ class Vente extends Model
     protected $fillable = [
         'franchise_id',
         'camion_id',
+        'commande_client_id',
         'date_vente',
         'montant_total',
         'pourcentage_reverse',
@@ -39,6 +40,12 @@ class Vente extends Model
         return $this->belongsTo(Camion::class);
     }
 
+    // Relation avec CommandeClient
+    public function commandeClient()
+    {
+        return $this->belongsTo(CommandeClient::class);
+    }
+
     // Méthodes utilitaires
     public function getMontantTotalFormateAttribute()
     {
@@ -61,5 +68,14 @@ class Vente extends Model
             return asset('storage/' . $this->pdf_path);
         }
         return null;
+    }
+
+    // Méthode pour identifier le type de vente
+    public function getTypeVenteAttribute()
+    {
+        if ($this->commande_client_id) {
+            return 'Commande Client (Stripe)';
+        }
+        return 'Vente Manuelle';
     }
 } 

@@ -250,7 +250,7 @@
 
     <script>
         function openAssignModal(camionId) {
-            document.getElementById('assignForm').action = `/admin/camions/${camionId}/assign-franchise`;
+            document.getElementById('assignForm').action = `/drive-main/drive-main/public/admin/camions/${camionId}/assign-franchise`;
             document.getElementById('assignModal').classList.remove('hidden');
             
             // Réinitialiser la recherche et la sélection

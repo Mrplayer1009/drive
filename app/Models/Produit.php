@@ -17,6 +17,7 @@ class Produit extends Model
         'unite_mesure',
         'stock_minimum',
         'obligatoire',
+        'image',
     ];
 
     protected $casts = [

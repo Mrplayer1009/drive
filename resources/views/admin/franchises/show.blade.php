@@ -69,84 +69,53 @@
                 </div>
             </div>
 
-            <!-- Camions attribués -->
+            <!-- Camion attribué -->
             <div class="bg-white shadow rounded-lg p-6 mt-6">
                 <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-lg font-medium text-black">Camions attribués</h3>
-                    <button onclick="openAssignModal()" class="bg-orange-600 hover:bg-orange-700 text-black px-3 py-1 rounded text-sm">
-                        <i class="fas fa-plus mr-1"></i>
-                        Assigner un camion
-                    </button>
+                    <h3 class="text-lg font-medium text-black">Camion attribué</h3>
+                    <a href="{{ route('admin.franchises.assigner-camion', $franchise) }}" class="bg-orange-600 hover:bg-orange-700 text-black px-3 py-1 rounded text-sm">
+                        <i class="fas fa-truck mr-1"></i>
+                        Gérer le camion
+                    </a>
                 </div>
                 
-                @if($franchise->camions->count() > 0)
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        @foreach($franchise->camions as $camion)
-                        <div class="border border-gray-200 rounded-lg p-4">
-                            <div class="flex items-center justify-between mb-2">
-                                <h4 class="font-medium text-black">{{ $camion->immatriculation }}</h4>
-                                <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
-                                    Actif
-                                </span>
-                            </div>
-                            <p class="text-sm text-black">{{ $camion->marque }} {{ $camion->modele }}</p>
-                            <p class="text-sm text-black">{{ $camion->ville_localisation }}</p>
-                            <p class="text-xs text-gray-500">Attribué le {{ $camion->pivot->date_attribution->format('d/m/Y') }}</p>
-                            <form action="{{ route('admin.franchises.remove-camion', ['franchise' => $franchise, 'camion' => $camion]) }}" method="POST" class="mt-2">
+                @if($franchise->getCamionActuel())
+                    @php $camion = $franchise->getCamionActuel(); @endphp
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="font-medium text-black">{{ $camion->immatriculation }}</h4>
+                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
+                                Actif
+                            </span>
+                        </div>
+                        <p class="text-sm text-black">{{ $camion->marque }} {{ $camion->modele }} ({{ $camion->annee }})</p>
+                        <p class="text-sm text-black">{{ $camion->ville_localisation }}</p>
+                        <p class="text-sm text-black">Capacité : {{ $camion->capacite }} tonnes</p>
+                        <p class="text-xs text-gray-500">Statut : {{ ucfirst($camion->statut) }}</p>
+                        
+                        <div class="mt-3 flex space-x-2">
+                            <form action="{{ route('admin.franchises.retirer-camion', $franchise) }}" method="POST" class="inline">
                                 @csrf
-                                @method('DELETE')
-                                <button type="submit" class="text-red-600 hover:text-red-700 text-xs" onclick="return confirm('Retirer ce camion ?')">
-                                    <i class="fas fa-times mr-1"></i>Retirer
+                                <button type="submit" class="text-red-600 hover:text-red-700 text-xs" onclick="return confirm('Êtes-vous sûr de vouloir retirer ce camion ?')">
+                                    <i class="fas fa-times mr-1"></i>Retirer le camion
                                 </button>
                             </form>
                         </div>
-                        @endforeach
                     </div>
                 @else
-                    <p class="text-black text-center py-4">Aucun camion attribué</p>
+                    <div class="text-center py-8">
+                        <i class="fas fa-truck text-gray-400 text-4xl mb-4"></i>
+                        <h4 class="text-lg font-medium text-gray-900 mb-2">Aucun camion assigné</h4>
+                        <p class="text-gray-600 mb-4">Ce franchisé n'a pas de camion assigné pour le moment.</p>
+                        <a href="{{ route('admin.franchises.assigner-camion', $franchise) }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition duration-300">
+                            <i class="fas fa-plus mr-2"></i>
+                            Assigner un camion
+                        </a>
+                    </div>
                 @endif
             </div>
 
-            <!-- Modal d'assignation de camion -->
-            <div id="assignModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
-                <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-                    <div class="mt-3">
-                        <h3 class="text-lg font-medium text-black mb-4">Assigner un camion</h3>
-                        <form action="{{ route('admin.franchises.assign-camion', $franchise) }}" method="POST">
-                            @csrf
-                            <div class="mb-4">
-                                <label for="camion_id" class="block text-sm font-medium text-black mb-2">Sélectionner un camion</label>
-                                <select id="camion_id" name="camion_id" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500">
-                                    <option value="">Choisir un camion...</option>
-                                    @foreach($camions_disponibles ?? [] as $camion)
-                                        <option value="{{ $camion->id }}">
-                                            {{ $camion->immatriculation }} - {{ $camion->marque }} {{ $camion->modele }} ({{ $camion->ville_localisation }})
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="flex justify-end space-x-2">
-                                <button type="button" onclick="closeAssignModal()" class="bg-gray-600 hover:bg-gray-700 text-black px-4 py-2 rounded text-sm">
-                                    Annuler
-                                </button>
-                                <button type="submit" class="bg-orange-600 hover:bg-orange-700 text-black px-4 py-2 rounded text-sm">
-                                    Assigner
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
 
-            <script>
-                function openAssignModal() {
-                    document.getElementById('assignModal').classList.remove('hidden');
-                }
-                
-                function closeAssignModal() {
-                    document.getElementById('assignModal').classList.add('hidden');
-                }
-            </script>
         </div>
 
         <!-- Informations de compte -->

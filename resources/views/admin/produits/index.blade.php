@@ -73,9 +73,13 @@
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center">
                                 <div class="flex-shrink-0 h-10 w-10">
-                                    <div class="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center">
-                                        <i class="fas fa-box text-orange-600"></i>
-                                    </div>
+                                    @if($produit->image)
+                                        <img src="{{ asset('storage/' . $produit->image) }}" alt="{{ $produit->nom }}" class="h-10 w-10 rounded-full object-cover">
+                                    @else
+                                        <div class="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center">
+                                            <i class="fas fa-box text-orange-600"></i>
+                                        </div>
+                                    @endif
                                 </div>
                                 <div class="ml-4">
                                     <div class="text-sm font-medium text-black">{{ $produit->nom }}</div>

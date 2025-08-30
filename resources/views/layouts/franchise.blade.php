@@ -59,9 +59,24 @@
                     Mes commandes
                 </a>
                 
+                <a href="{{ Auth::user()->statut === 'inactif' ? '#' : route('franchise.commandes-clients.index') }}" class="mt-1 group flex items-center px-2 py-2 text-base font-medium rounded-md {{ request()->routeIs('franchise.commandes-clients.*') ? 'bg-orange-100 text-orange-900' : 'text-black hover:bg-gray-50 hover:text-black' }} {{ Auth::user()->statut === 'inactif' ? 'opacity-50 cursor-not-allowed' : '' }}">
+                    <i class="fas fa-users mr-4 text-lg"></i>
+                    Commandes clients
+                </a>
+                
+                <a href="{{ Auth::user()->statut === 'inactif' ? '#' : route('franchise.commande-sur-place') }}" class="mt-1 group flex items-center px-2 py-2 text-base font-medium rounded-md {{ request()->routeIs('franchise.commande-sur-place.*') ? 'bg-orange-100 text-orange-900' : 'text-black hover:bg-gray-50 hover:text-black' }} {{ Auth::user()->statut === 'inactif' ? 'opacity-50 cursor-not-allowed' : '' }}">
+                    <i class="fas fa-utensils mr-4 text-lg"></i>
+                    Commande sur place
+                </a>
+                
                 <a href="{{ Auth::user()->statut === 'inactif' ? '#' : route('franchise.ventes.index') }}" class="mt-1 group flex items-center px-2 py-2 text-base font-medium rounded-md {{ request()->routeIs('franchise.ventes.*') ? 'bg-orange-100 text-orange-900' : 'text-black hover:bg-gray-50 hover:text-black' }} {{ Auth::user()->statut === 'inactif' ? 'opacity-50 cursor-not-allowed' : '' }}">
                     <i class="fas fa-chart-line mr-4 text-lg"></i>
                     Mes ventes
+                </a>
+                
+                <a href="{{ Auth::user()->statut === 'inactif' ? '#' : route('franchise.evenements.index') }}" class="mt-1 group flex items-center px-2 py-2 text-base font-medium rounded-md {{ request()->routeIs('franchise.evenements.*') ? 'bg-orange-100 text-orange-900' : 'text-black hover:bg-gray-50 hover:text-black' }} {{ Auth::user()->statut === 'inactif' ? 'opacity-50 cursor-not-allowed' : '' }}">
+                    <i class="fas fa-calendar mr-4 text-lg"></i>
+                    Événements
                 </a>
             </nav>
         </div>

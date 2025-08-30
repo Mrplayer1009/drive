@@ -76,6 +76,7 @@
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Date</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Camion</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Type</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Commandes</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Montant total</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Montant reversé</th>
@@ -90,6 +91,19 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-black">
                             {{ $vente->camion ? $vente->camion->immatriculation : 'N/A' }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                            @if($vente->commande_client_id)
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    <i class="fas fa-shopping-cart mr-1"></i>
+                                    Commande Client
+                                </span>
+                            @else
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    <i class="fas fa-hand-holding-usd mr-1"></i>
+                                    Manuelle
+                                </span>
+                            @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-black">
                             {{ $vente->nombre_commandes }}
@@ -111,7 +125,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="6" class="px-6 py-4 text-center text-black">Aucune vente trouvée</td>
+                        <td colspan="7" class="px-6 py-4 text-center text-black">Aucune vente trouvée</td>
                     </tr>
                     @endforelse
                 </tbody>

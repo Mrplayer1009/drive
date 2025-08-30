@@ -18,6 +18,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Storage;
+use App\Models\Menu;
+use App\Models\CommandeClient;
 
 class AdminController extends Controller
 {
@@ -25,13 +28,24 @@ class AdminController extends Controller
     {
         $stockService = app(StockService::class);
         
+        // Statistiques des ventes
+        $totalVentes = Vente::count();
+        $ventesCommandesClients = Vente::whereNotNull('commande_client_id')->count();
+        $ventesManuelles = $totalVentes - $ventesCommandesClients;
+        $totalCA = Vente::sum('montant_total');
+        $totalReverse = Vente::sum('montant_reverse');
+        
         $stats = [
             'total_franchises' => Franchise::count(),
             'total_camions' => Camion::count(),
             'total_entrepots' => Entrepot::count(),
             'total_produits' => Produit::count(),
             'total_commandes' => Commande::count(),
-            'total_ventes' => Vente::count(),
+            'total_ventes' => $totalVentes,
+            'ventes_commandes_clients' => $ventesCommandesClients,
+            'ventes_manuelles' => $ventesManuelles,
+            'total_ca' => $totalCA,
+            'total_reverse' => $totalReverse,
             'franchises_actifs' => Franchise::where('statut', 'actif')->count(),
             'camions_disponibles' => Camion::where('statut', 'disponible')->count(),
             'camions_en_utilisation' => Camion::where('statut', 'en_utilisation')->count(),
@@ -172,7 +186,16 @@ class AdminController extends Controller
             return back()->withErrors(['franchise' => 'Seuls les franchisés actifs peuvent recevoir des camions.']);
         }
 
-        // Assigner le camion au franchisé
+        // Vérifier si le franchisé a déjà un camion et le retirer
+        $camionExistant = $franchise->camions()->where('franchise_camion.statut', 'actif')->first();
+        if ($camionExistant) {
+            // Désactiver l'ancien camion
+            $franchise->camions()->updateExistingPivot($camionExistant->id, ['statut' => 'inactif']);
+            // Remettre l'ancien camion en statut disponible
+            $camionExistant->update(['statut' => 'disponible']);
+        }
+
+        // Assigner le nouveau camion au franchisé
         $franchise->camions()->attach($camion->id, [
             'date_attribution' => now(),
             'statut' => 'actif'
@@ -268,7 +291,11 @@ class AdminController extends Controller
     public function camions()
     {
         $camions = Camion::with(['franchises'])->paginate(15);
-        $franchises = Franchise::all();
+        
+        // Ne récupérer que les franchisés qui n'ont pas de camion actif
+        $franchises = Franchise::whereDoesntHave('camions', function($query) {
+            $query->where('franchise_camion.statut', 'actif');
+        })->where('statut', 'actif')->get();
         
         // Statistiques
         $stats = [
@@ -289,6 +316,12 @@ class AdminController extends Controller
         ]);
 
         $franchise = Franchise::find($request->franchise_id);
+        
+        // Vérifier si le franchisé a déjà un camion actif
+        $camionExistant = $franchise->camions()->where('franchise_camion.statut', 'actif')->first();
+        if ($camionExistant) {
+            return back()->withErrors(['franchise_id' => 'Ce franchisé a déjà un camion assigné.']);
+        }
         
         // Retirer l'assignation précédente si elle existe
         $camion->franchises()->detach();
@@ -642,14 +675,28 @@ class AdminController extends Controller
     {
         $request->validate([
             'nom' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'categorie' => 'required|in:ingredients,plats,boissons',
+            'description' => 'required|string',
             'prix_unitaire' => 'required|numeric|min:0',
+            'categorie' => 'required|in:viande,legumes,boissons,epices,emballages,autres',
             'unite_mesure' => 'required|string|max:50',
             'obligatoire' => 'boolean',
+            'image' => 'nullable|file|mimes:jpeg,png,jpg,gif,webp|max:5120',
+        ], [
+            'image.mimes' => 'Le fichier doit être une image (JPEG, PNG, JPG, GIF, WEBP)',
+            'image.max' => 'L\'image ne doit pas dépasser 5MB',
         ]);
 
-        Produit::create($request->all());
+        $data = $request->all();
+        
+        // Gestion de l'upload d'image
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $imageName = time() . '_' . $image->getClientOriginalName();
+            $image->storeAs('public/produits', $imageName);
+            $data['image'] = 'produits/' . $imageName;
+        }
+
+        Produit::create($data);
         return redirect()->route('admin.produits.index')->with('success', 'Produit créé avec succès');
     }
 
@@ -667,21 +714,140 @@ class AdminController extends Controller
     {
         $request->validate([
             'nom' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'categorie' => 'required|in:ingredients,plats,boissons',
+            'description' => 'required|string',
             'prix_unitaire' => 'required|numeric|min:0',
+            'categorie' => 'required|in:viande,legumes,boissons,epices,emballages,autres',
             'unite_mesure' => 'required|string|max:50',
             'obligatoire' => 'boolean',
+            'image' => 'nullable|file|mimes:jpeg,png,jpg,gif,webp|max:5120',
         ]);
 
-        $produit->update($request->all());
+        $data = $request->all();
+        
+        // Gestion de l'upload d'image
+        if ($request->hasFile('image')) {
+            // Supprimer l'ancienne image si elle existe
+            if ($produit->image && Storage::disk('public')->exists($produit->image)) {
+                Storage::disk('public')->delete($produit->image);
+            }
+            
+            $image = $request->file('image');
+            $imageName = time() . '_' . $image->getClientOriginalName();
+            $image->storeAs('public/produits', $imageName);
+            $data['image'] = 'produits/' . $imageName;
+        }
+
+        $produit->update($data);
         return redirect()->route('admin.produits.index')->with('success', 'Produit mis à jour avec succès');
     }
 
     public function produitsDestroy(Produit $produit)
     {
+        // Supprimer l'image si elle existe
+        if ($produit->image && Storage::disk('public')->exists($produit->image)) {
+            Storage::disk('public')->delete($produit->image);
+        }
+        
         $produit->delete();
         return redirect()->route('admin.produits.index')->with('success', 'Produit supprimé avec succès');
+    }
+
+    // Gestion des menus
+    public function menus()
+    {
+        $menus = Menu::orderBy('ordre_affichage')->paginate(15);
+        return view('admin.menus.index', compact('menus'));
+    }
+
+    public function menusCreate()
+    {
+        return view('admin.menus.create');
+    }
+
+    public function menusStore(Request $request)
+    {
+        $request->validate([
+            'nom' => 'required|string|max:255',
+            'description' => 'required|string',
+            'prix' => 'required|numeric|min:0',
+            'categorie' => 'required|in:burger,boisson,dessert,accompagnement,entree',
+            'image' => 'nullable|file|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'disponible' => 'boolean',
+            'special' => 'boolean',
+            'ordre_affichage' => 'nullable|integer|min:0',
+        ], [
+            'image.mimes' => 'Le fichier doit être une image (JPEG, PNG, JPG, GIF, WEBP)',
+            'image.max' => 'L\'image ne doit pas dépasser 5MB',
+        ]);
+
+        $data = $request->all();
+        
+        // Gestion de l'upload d'image
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $imageName = time() . '_' . $image->getClientOriginalName();
+            $image->storeAs('public/menus', $imageName);
+            $data['image'] = 'menus/' . $imageName;
+        }
+
+        Menu::create($data);
+        return redirect()->route('admin.menus.index')->with('success', 'Menu créé avec succès');
+    }
+
+    public function menusShow(Menu $menu)
+    {
+        return view('admin.menus.show', compact('menu'));
+    }
+
+    public function menusEdit(Menu $menu)
+    {
+        return view('admin.menus.edit', compact('menu'));
+    }
+
+    public function menusUpdate(Request $request, Menu $menu)
+    {
+        $request->validate([
+            'nom' => 'required|string|max:255',
+            'description' => 'required|string',
+            'prix' => 'required|numeric|min:0',
+            'categorie' => 'required|in:burger,boisson,dessert,accompagnement,entree',
+            'image' => 'nullable|file|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'disponible' => 'boolean',
+            'special' => 'boolean',
+            'ordre_affichage' => 'nullable|integer|min:0',
+        ], [
+            'image.mimes' => 'Le fichier doit être une image (JPEG, PNG, JPG, GIF, WEBP)',
+            'image.max' => 'L\'image ne doit pas dépasser 5MB',
+        ]);
+
+        $data = $request->all();
+        
+        // Gestion de l'upload d'image
+        if ($request->hasFile('image')) {
+            // Supprimer l'ancienne image si elle existe
+            if ($menu->image && Storage::disk('public')->exists($menu->image)) {
+                Storage::disk('public')->delete($menu->image);
+            }
+            
+            $image = $request->file('image');
+            $imageName = time() . '_' . $image->getClientOriginalName();
+            $image->storeAs('public/menus', $imageName);
+            $data['image'] = 'menus/' . $imageName;
+        }
+
+        $menu->update($data);
+        return redirect()->route('admin.menus.index')->with('success', 'Menu mis à jour avec succès');
+    }
+
+    public function menusDestroy(Menu $menu)
+    {
+        // Supprimer l'image si elle existe
+        if ($menu->image && Storage::disk('public')->exists($menu->image)) {
+            Storage::disk('public')->delete($menu->image);
+        }
+        
+        $menu->delete();
+        return redirect()->route('admin.menus.index')->with('success', 'Menu supprimé avec succès');
     }
 
     public function statistiques(Request $request)
@@ -1172,6 +1338,154 @@ class AdminController extends Controller
         } catch (\Exception $e) {
             return redirect()->route('admin.franchises.index')
                 ->with('error', 'Erreur lors de la suppression du franchisé : ' . $e->getMessage());
+        }
+    }
+
+    // Gestion des commandes clients (Admin)
+    public function commandesClients(Request $request)
+    {
+        $query = \App\Models\CommandeClient::with(['client', 'franchise', 'menus']);
+        
+        // Recherche par email ou téléphone
+        if ($request->filled('recherche')) {
+            $recherche = $request->get('recherche');
+            $query->whereHas('client', function($q) use ($recherche) {
+                $q->where('email', 'LIKE', "%{$recherche}%")
+                  ->orWhere('telephone', 'LIKE', "%{$recherche}%");
+            });
+        }
+        
+        // Tri par email du client ou statut
+        $tri = $request->get('tri', 'date_desc');
+        switch ($tri) {
+            case 'email_asc':
+                $query->join('clients', 'commande_clients.client_id', '=', 'clients.id')
+                      ->orderBy('clients.email', 'asc')
+                      ->select('commande_clients.*');
+                break;
+            case 'email_desc':
+                $query->join('clients', 'commande_clients.client_id', '=', 'clients.id')
+                      ->orderBy('clients.email', 'desc')
+                      ->select('commande_clients.*');
+                break;
+            case 'statut_asc':
+                $query->orderBy('statut', 'asc');
+                break;
+            case 'statut_desc':
+                $query->orderBy('statut', 'desc');
+                break;
+            case 'date_desc':
+            default:
+                $query->orderBy('date_commande', 'desc');
+                break;
+        }
+        
+        $commandes = $query->paginate(15)->withQueryString();
+        
+        $stats = [
+            'total' => \App\Models\CommandeClient::count(),
+            'en_attente' => \App\Models\CommandeClient::where('statut', 'en_attente')->count(),
+            'confirmee' => \App\Models\CommandeClient::where('statut', 'confirmee')->count(),
+            'en_preparation' => \App\Models\CommandeClient::where('statut', 'en_preparation')->count(),
+            'prete' => \App\Models\CommandeClient::where('statut', 'prete')->count(),
+            'terminee' => \App\Models\CommandeClient::where('statut', 'terminee')->count(),
+            'annulee' => \App\Models\CommandeClient::where('statut', 'annulee')->count(),
+        ];
+        
+        return view('admin.commandes-clients.index', compact('commandes', 'stats'));
+    }
+
+    public function commandesClientsShow(\App\Models\CommandeClient $commande)
+    {
+        $commande->load(['client', 'franchise', 'menus']);
+        return view('admin.commandes-clients.show', compact('commande'));
+    }
+
+    public function commandesClientsDestroy(\App\Models\CommandeClient $commande)
+    {
+        try {
+            // Vérifier que la commande peut être supprimée (en attente ou confirmée)
+            if (!in_array($commande->statut, ['en_attente', 'confirmee'])) {
+                return redirect()->route('admin.commandes-clients.show', $commande)
+                    ->with('error', 'Seules les commandes en attente ou confirmées peuvent être supprimées');
+            }
+
+            // Supprimer les relations avec les menus
+            $commande->menus()->detach();
+            
+            // Supprimer la commande
+            $commande->delete();
+            
+            return redirect()->route('admin.commandes-clients.index')
+                ->with('success', 'Commande client supprimée avec succès');
+        } catch (\Exception $e) {
+            return redirect()->route('admin.commandes-clients.show', $commande)
+                ->with('error', 'Erreur lors de la suppression de la commande : ' . $e->getMessage());
+        }
+    }
+
+    // Gestion de l'assignation de camions aux franchisés
+    public function assignerCamion(Franchise $franchise)
+    {
+        // Récupérer tous les camions disponibles
+        $camionsDisponibles = Camion::where('statut', 'disponible')->get();
+        
+        // Récupérer le camion actuel du franchisé
+        $camionActuel = $franchise->getCamionActuel();
+        
+        return view('admin.franchises.assigner-camion', compact('franchise', 'camionsDisponibles', 'camionActuel'));
+    }
+
+    public function assignerCamionStore(Request $request, Franchise $franchise)
+    {
+        $request->validate([
+            'camion_id' => 'required|exists:camions,id'
+        ]);
+
+        try {
+            // Vérifier que le camion est disponible
+            $camion = Camion::findOrFail($request->camion_id);
+            
+            if ($camion->statut !== 'disponible') {
+                return redirect()->route('admin.franchises.assigner-camion', $franchise)
+                    ->with('error', 'Ce camion n\'est pas disponible');
+            }
+
+            // Assigner le camion au franchisé
+            $franchise->assignerCamion($request->camion_id);
+            
+            // Mettre à jour le statut du camion
+            $camion->update(['statut' => 'en_utilisation']);
+
+            return redirect()->route('admin.franchises.show', $franchise)
+                ->with('success', 'Camion assigné avec succès au franchisé');
+        } catch (\Exception $e) {
+            return redirect()->route('admin.franchises.assigner-camion', $franchise)
+                ->with('error', 'Erreur lors de l\'assignation du camion : ' . $e->getMessage());
+        }
+    }
+
+    public function retirerCamion(Franchise $franchise)
+    {
+        try {
+            $camionActuel = $franchise->getCamionActuel();
+            
+            if (!$camionActuel) {
+                return redirect()->route('admin.franchises.show', $franchise)
+                    ->with('error', 'Ce franchisé n\'a pas de camion assigné');
+            }
+
+            // Retirer le camion du franchisé
+            $franchise->retirerCamion();
+            
+            // Remettre le camion en statut disponible
+            $camionActuel->update(['statut' => 'disponible']);
+
+            return redirect()->route('admin.franchises.show', $franchise)
+                ->with('success', 'Camion retiré avec succès du franchisé');
+        } catch (\Exception $e) {
+            return redirect()->route('admin.franchises.show', $franchise)
+                ->with('error', 'Erreur lors du retrait du camion : ' . $e->getMessage());
         }
     }
 } 

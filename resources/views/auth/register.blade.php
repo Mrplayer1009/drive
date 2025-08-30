@@ -6,6 +6,7 @@
     <title>Inscription - Driv'n Cook</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
 </head>
 <body class="bg-gradient-to-br from-orange-50 to-red-50 min-h-screen flex items-center justify-center">
     <div class="max-w-md w-full space-y-8">
@@ -14,10 +15,10 @@
                 <i class="fas fa-truck text-orange-600 text-2xl"></i>
             </div>
             <h2 class="mt-6 text-center text-3xl font-extrabold text-black">
-                Inscription Franchisé
+                Inscription
             </h2>
             <p class="mt-2 text-center text-sm text-black">
-                Rejoignez le réseau Driv'n Cook
+                Rejoignez Driv'n Cook
             </p>
         </div>
         
@@ -34,6 +35,15 @@
         <form class="mt-8 space-y-6" action="{{ route('register') }}" method="POST">
             @csrf
             <div class="rounded-md shadow-sm -space-y-px">
+                <div class="mb-4">
+                    <label for="type" class="block text-sm font-medium text-black mb-2">
+                        Type de compte
+                    </label>
+                    <select id="type" name="type" required class="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-black focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm">
+                        <option value="client">Client</option>
+                        <option value="franchise">Franchisé</option>
+                    </select>
+                </div>
                 <div class="grid grid-cols-2 gap-4 mb-4">
                     <div>
                         <label for="prenom" class="block text-sm font-medium text-black mb-2">
@@ -85,11 +95,33 @@
                     </div>
                 </div>
 
-                <div class="mb-4">
+                <!-- Champs spécifiques aux franchises -->
+                <div id="franchise-fields" class="mb-4" style="display: none;">
                     <label for="date_entree" class="block text-sm font-medium text-black mb-2">
                         Date d'entrée souhaitée
                     </label>
-                    <input id="date_entree" name="date_entree" type="date" required min="{{ date('Y-m-d') }}" class="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-black focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm">
+                    <input id="date_entree" name="date_entree" type="date" min="{{ date('Y-m-d') }}" class="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-black focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm">
+                </div>
+
+                <!-- Champs spécifiques aux clients -->
+                <div id="client-fields" class="mb-4">
+                    <div class="mb-4">
+                        <label for="langue" class="block text-sm font-medium text-black mb-2">
+                            Langue préférée
+                        </label>
+                        <select id="langue" name="langue" class="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-black focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm">
+                            <option value="fr">Français</option>
+                            <option value="en">English</option>
+                            <option value="es">Español</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="flex items-center">
+                            <input type="checkbox" name="newsletter_active" value="1" checked class="rounded border-gray-300 text-orange-600 shadow-sm focus:border-orange-300 focus:ring focus:ring-orange-200 focus:ring-opacity-50">
+                            <span class="ml-2 text-sm text-black">Recevoir la newsletter</span>
+                        </label>
+                    </div>
                 </div>
                 
                 <div class="mb-4">
@@ -139,5 +171,24 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.getElementById('type').addEventListener('change', function() {
+            const type = this.value;
+            const franchiseFields = document.getElementById('franchise-fields');
+            const clientFields = document.getElementById('client-fields');
+            const dateEntree = document.getElementById('date_entree');
+            
+            if (type === 'franchise') {
+                franchiseFields.style.display = 'block';
+                clientFields.style.display = 'none';
+                dateEntree.required = true;
+            } else {
+                franchiseFields.style.display = 'none';
+                clientFields.style.display = 'block';
+                dateEntree.required = false;
+            }
+        });
+    </script>
 </body>
 </html> 

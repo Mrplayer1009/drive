@@ -96,14 +96,17 @@
                             </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-black">
-                            @if($franchise->camions->count() > 0)
-                                @foreach($franchise->camions->take(3) as $camion)
+                            @php
+                                $camionsActifs = $franchise->camions()->where('franchise_camion.statut', 'actif')->get();
+                            @endphp
+                            @if($camionsActifs->count() > 0)
+                                @foreach($camionsActifs->take(3) as $camion)
                                     <div class="text-xs">
                                         {{ $camion->immatriculation }} - {{ $camion->marque }} {{ $camion->modele }}
                                     </div>
                                 @endforeach
-                                @if($franchise->camions->count() > 3)
-                                    <div class="text-xs text-gray-500">+{{ $franchise->camions->count() - 3 }} autre(s)</div>
+                                @if($camionsActifs->count() > 3)
+                                    <div class="text-xs text-gray-500">+{{ $camionsActifs->count() - 3 }} autre(s)</div>
                                 @endif
                             @else
                                 <div class="flex items-center space-x-2">
@@ -405,10 +408,10 @@ function closeDeleteModal() {
 
 function openAssignCamionModal(franchiseId, franchiseName) {
     document.getElementById('assignFranchiseName').textContent = franchiseName;
-    document.getElementById('assignCamionForm').action = `/admin/franchises/${franchiseId}/assign-camion`;
+    document.getElementById('assignCamionForm').action = `/drive-main/drive-main/public/admin/franchises/${franchiseId}/assign-camion`;
     
     // Charger les camions disponibles
-    fetch(`/admin/franchises/${franchiseId}/camions-disponibles`)
+    fetch(`/drive-main/drive-main/public/admin/franchises/${franchiseId}/camions-disponibles`)
         .then(response => response.json())
         .then(data => {
             const container = document.getElementById('assignCamionsDisponibles');

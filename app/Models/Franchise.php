@@ -23,6 +23,10 @@ class Franchise extends Authenticatable
         'droits_entree',
         'pourcentage_ventes',
         'password',
+        'latitude',
+        'longitude',
+        'adresse_emplacement',
+        'disponible',
     ];
 
     protected $hidden = [
@@ -157,5 +161,110 @@ class Franchise extends Authenticatable
         }
         
         return false;
+    }
+
+    // Méthodes pour les food trucks
+    public function commandesClients()
+    {
+        return $this->hasMany(\App\Models\CommandeClient::class, 'food_truck_id');
+    }
+
+    /**
+     * Relation avec les événements
+     */
+    public function evenements()
+    {
+        return $this->hasMany(Evenement::class);
+    }
+
+    public function getDistanceFrom($latitude, $longitude)
+    {
+        if (!$this->latitude || !$this->longitude) {
+            return null;
+        }
+
+        // Formule de Haversine pour calculer la distance
+        $lat1 = deg2rad($this->latitude);
+        $lon1 = deg2rad($this->longitude);
+        $lat2 = deg2rad($latitude);
+        $lon2 = deg2rad($longitude);
+
+        $dlat = $lat2 - $lat1;
+        $dlon = $lon2 - $lon1;
+
+        $a = sin($dlat/2) * sin($dlat/2) + cos($lat1) * cos($lat2) * sin($dlon/2) * sin($dlon/2);
+        $c = 2 * atan2(sqrt($a), sqrt(1-$a));
+        $distance = 6371 * $c; // Rayon de la Terre en km
+
+        return round($distance, 2);
+    }
+
+    public function getDistanceFormateeAttribute($latitude = null, $longitude = null)
+    {
+        if ($latitude && $longitude) {
+            $distance = $this->getDistanceFrom($latitude, $longitude);
+            return $distance ? $distance . ' km' : 'Distance inconnue';
+        }
+        return 'Distance non calculée';
+    }
+
+    public function scopeDisponible($query)
+    {
+        return $query->where('disponible', true);
+    }
+
+    public function scopeAvecCoordonnees($query)
+    {
+        return $query->whereNotNull('latitude')->whereNotNull('longitude');
+    }
+
+    public function scopeAvecCamions($query)
+    {
+        return $query->whereHas('camions', function ($q) {
+            $q->where('franchise_camion.statut', 'actif');
+        });
+    }
+
+    public function hasCamionsActifs()
+    {
+        return $this->camions()->where('franchise_camion.statut', 'actif')->exists();
+    }
+
+    public function getCamionsActifsCount()
+    {
+        return $this->camions()->where('franchise_camion.statut', 'actif')->count();
+    }
+
+    public function assignerCamion($camionId)
+    {
+        // Vérifier si le franchisé a déjà un camion
+        $camionExistant = $this->camions()->where('franchise_camion.statut', 'actif')->first();
+        
+        if ($camionExistant) {
+            // Désactiver l'ancien camion
+            $this->camions()->updateExistingPivot($camionExistant->id, ['statut' => 'inactif']);
+        }
+
+        // Assigner le nouveau camion
+        $this->camions()->attach($camionId, ['statut' => 'actif']);
+        
+        return true;
+    }
+
+    public function retirerCamion()
+    {
+        $camionActuel = $this->camions()->where('franchise_camion.statut', 'actif')->first();
+        
+        if ($camionActuel) {
+            $this->camions()->updateExistingPivot($camionActuel->id, ['statut' => 'inactif']);
+            return true;
+        }
+        
+        return false;
+    }
+
+    public function getCamionActuel()
+    {
+        return $this->camions()->where('franchise_camion.statut', 'actif')->first();
     }
 } 

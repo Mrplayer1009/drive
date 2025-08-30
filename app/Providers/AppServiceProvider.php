@@ -27,6 +27,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Configuration pour MySQL - résoudre le problème de longueur de clé
+        \Illuminate\Support\Facades\Schema::defaultStringLength(191);
+        
         // Enregistrer les observateurs
         Commande::observe(CommandeObserver::class);
         Vente::observe(VenteObserver::class);

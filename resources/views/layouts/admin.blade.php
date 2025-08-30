@@ -79,9 +79,24 @@
                     Commandes
                 </a>
                 
+                <a href="{{ route('admin.commandes-clients.index') }}" class="mt-1 group flex items-center px-2 py-2 text-base font-medium rounded-md {{ request()->routeIs('admin.commandes-clients.*') ? 'bg-orange-100 text-orange-900' : 'text-black hover:bg-gray-50 hover:text-black' }}">
+                    <i class="fas fa-users mr-4 text-lg"></i>
+                    Commandes Clients
+                </a>
+                
                 <a href="{{ route('admin.produits.index') }}" class="mt-1 group flex items-center px-2 py-2 text-base font-medium rounded-md {{ request()->routeIs('admin.produits.*') ? 'bg-orange-100 text-orange-900' : 'text-black hover:bg-gray-50 hover:text-black' }}">
                     <i class="fas fa-box mr-4 text-lg"></i>
                     Produits
+                </a>
+                
+                <a href="{{ route('admin.menus.index') }}" class="mt-1 group flex items-center px-2 py-2 text-base font-medium rounded-md {{ request()->routeIs('admin.menus.*') ? 'bg-orange-100 text-orange-900' : 'text-black hover:bg-gray-50 hover:text-black' }}">
+                    <i class="fas fa-utensils mr-4 text-lg"></i>
+                    Menus
+                </a>
+                
+                <a href="{{ route('admin.newsletter.index') }}" class="mt-1 group flex items-center px-2 py-2 text-base font-medium rounded-md {{ request()->routeIs('admin.newsletter.*') ? 'bg-orange-100 text-orange-900' : 'text-black hover:bg-gray-50 hover:text-black' }}">
+                    <i class="fas fa-envelope mr-4 text-lg"></i>
+                    Newsletter
                 </a>
                 
                 <a href="{{ route('admin.statistiques') }}" class="mt-1 group flex items-center px-2 py-2 text-base font-medium rounded-md {{ request()->routeIs('admin.statistiques') ? 'bg-orange-100 text-orange-900' : 'text-black hover:bg-gray-50 hover:text-black' }}">

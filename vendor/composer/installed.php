@@ -1163,6 +1163,15 @@
             'aliases' => array(),
             'dev_requirement' => true,
         ),
+        'stripe/stripe-php' => array(
+            'pretty_version' => 'v17.6.0',
+            'version' => '17.6.0.0',
+            'reference' => 'a6219df5df1324a0d3f1da25fb5e4b8a3307ea16',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../stripe/stripe-php',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
         'symfony/clock' => array(
             'pretty_version' => 'v7.3.0',
             'version' => '7.3.0.0',

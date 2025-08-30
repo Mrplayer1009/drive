@@ -20,6 +20,8 @@ class DatabaseSeeder extends Seeder
             CommandeSeeder::class,
             VenteSeeder::class,
             StockSeeder::class,
+            MenuSeeder::class,
+            ClientSeeder::class,
         ]);
     }
 }

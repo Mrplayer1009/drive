@@ -22,7 +22,7 @@
     @endif
 
     <!-- Statistiques -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-6">
         <div class="bg-white shadow rounded-lg p-6">
             <div class="flex items-center">
                 <div class="flex-shrink-0">
@@ -82,10 +82,25 @@
                 </div>
             </div>
         </div>
+
+        <div class="bg-white shadow rounded-lg p-6">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <div class="w-8 h-8 bg-red-500 rounded-md flex items-center justify-center">
+                        <i class="fas fa-users text-black"></i>
+                    </div>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-black">Commandes clients</p>
+                    <p class="text-2xl font-semibold text-black">{{ $stats['commandes_clients_en_attente'] }}</p>
+                    <p class="text-xs text-red-600">{{ $stats['commandes_clients_total'] }} total</p>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Contenu principal -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Ventes récentes -->
         <div class="bg-white shadow rounded-lg p-6">
             <h3 class="text-lg font-medium text-black mb-4">Ventes récentes</h3>
@@ -150,6 +165,44 @@
                 @else
                     <a href="{{ route('franchise.commandes.index') }}" class="text-orange-600 hover:text-orange-700 text-sm font-medium">
                         Voir toutes les commandes →
+                    </a>
+                @endif
+            </div>
+        </div>
+
+        <!-- Commandes clients récentes -->
+        <div class="bg-white shadow rounded-lg p-6">
+            <h3 class="text-lg font-medium text-black mb-4">Commandes clients récentes</h3>
+            <div class="space-y-4">
+                @forelse($commandes_clients_recentes as $commande)
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div>
+                        <p class="font-medium text-black">{{ $commande->client->nom }} {{ $commande->client->prenom }}</p>
+                        <p class="text-sm text-black">{{ \Carbon\Carbon::parse($commande->date_commande)->format('d/m/Y') }}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-medium text-black">{{ number_format($commande->montant_final, 2, ',', ' ') }} €</p>
+                        <span class="px-2 py-1 text-xs font-medium rounded-full 
+                            {{ $commande->statut === 'livree' ? 'bg-green-100 text-green-800' : 
+                               ($commande->statut === 'confirmee' ? 'bg-blue-100 text-blue-800' : 
+                               ($commande->statut === 'en_preparation' ? 'bg-purple-100 text-purple-800' :
+                               ($commande->statut === 'en_attente' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'))) }}">
+                            {{ ucfirst($commande->statut) }}
+                        </span>
+                    </div>
+                </div>
+                @empty
+                <p class="text-black text-center py-4">Aucune commande client récente</p>
+                @endforelse
+            </div>
+            <div class="mt-4">
+                @if(Auth::user()->statut === 'inactif')
+                    <span class="text-gray-400 text-sm font-medium cursor-not-allowed">
+                        Voir toutes les commandes clients →
+                    </span>
+                @else
+                    <a href="{{ route('franchise.commandes-clients.index') }}" class="text-orange-600 hover:text-orange-700 text-sm font-medium">
+                        Voir toutes les commandes clients →
                     </a>
                 @endif
             </div>

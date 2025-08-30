@@ -51,20 +51,36 @@
     <!-- Liste des ventes -->
     <div class="bg-white shadow rounded-lg">
         <div class="px-6 py-4 border-b border-gray-200">
-            <h3 class="text-lg font-medium text-black">Liste des ventes</h3>
+            <h3 class="text-lg font-medium text-black">Liste des Ventes</h3>
         </div>
-        
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Date</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Franchisé</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Camion</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Commandes</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Montant total</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Montant reversé</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Actions</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
+                            Date
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
+                            Franchisé
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
+                            Camion
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
+                            Type
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
+                            Commandes
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
+                            Montant Total
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
+                            Montant Reversé
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
+                            Actions
+                        </th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
@@ -79,6 +95,19 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-black">
                             {{ $vente->camion ? $vente->camion->immatriculation : 'N/A' }}
                         </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                            @if($vente->commande_client_id)
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    <i class="fas fa-shopping-cart mr-1"></i>
+                                    Commande Client
+                                </span>
+                            @else
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    <i class="fas fa-hand-holding-usd mr-1"></i>
+                                    Manuelle
+                                </span>
+                            @endif
+                        </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-black">
                             {{ $vente->nombre_commandes }}
                         </td>
@@ -89,31 +118,41 @@
                             <span class="text-green-600">{{ $vente->montant_reverse_formate }}</span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <a href="{{ route('admin.ventes.show', $vente) }}" class="text-blue-600 hover:text-blue-700 mr-3">
-                                <i class="fas fa-eye"></i>
-                            </a>
-                            <a href="{{ route('admin.ventes.download', $vente) }}" class="text-orange-600 hover:text-orange-700 mr-3">
-                                <i class="fas fa-download"></i>
-                            </a>
-                            <a href="{{ route('admin.ventes.edit', $vente) }}" class="text-green-600 hover:text-green-700">
-                                <i class="fas fa-edit"></i>
-                            </a>
+                            <div class="flex space-x-2">
+                                <a href="{{ route('admin.ventes.show', $vente) }}" class="text-orange-600 hover:text-orange-900">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{{ route('admin.ventes.edit', $vente) }}" class="text-blue-600 hover:text-blue-900">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{{ route('admin.ventes.download', $vente) }}" class="text-green-600 hover:text-green-900">
+                                    <i class="fas fa-download"></i>
+                                </a>
+                                <form action="{{ route('admin.ventes.destroy', $vente) }}" method="POST" class="inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette vente ?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="text-red-600 hover:text-red-900">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
                         </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" class="px-6 py-4 text-center text-black">Aucune vente trouvée</td>
+                        <td colspan="8" class="px-6 py-4 text-center text-black">
+                            Aucune vente trouvée
+                        </td>
                     </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
-
-        @if($ventes->hasPages())
+        
+        <!-- Pagination -->
         <div class="px-6 py-4 border-t border-gray-200">
             {{ $ventes->links() }}
         </div>
-        @endif
     </div>
 
     <!-- Statistiques -->
@@ -121,7 +160,7 @@
         <div class="bg-white shadow rounded-lg p-6">
             <div class="flex items-center">
                 <div class="flex-shrink-0">
-                    <div class="w-8 h-8 bg-orange-500 rounded-md flex items-center justify-center">
+                    <div class="w-8 h-8 bg-green-500 rounded-md flex items-center justify-center">
                         <i class="fas fa-euro-sign text-black"></i>
                     </div>
                 </div>
@@ -135,12 +174,12 @@
         <div class="bg-white shadow rounded-lg p-6">
             <div class="flex items-center">
                 <div class="flex-shrink-0">
-                    <div class="w-8 h-8 bg-green-500 rounded-md flex items-center justify-center">
-                        <i class="fas fa-chart-line text-black"></i>
+                    <div class="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center">
+                        <i class="fas fa-hand-holding-usd text-black"></i>
                     </div>
                 </div>
                 <div class="ml-4">
-                    <p class="text-sm font-medium text-black">Total reversé</p>
+                    <p class="text-sm font-medium text-black">Montant reversé</p>
                     <p class="text-2xl font-semibold text-black">{{ number_format($ventes->sum('montant_reverse'), 2, ',', ' ') }} €</p>
                 </div>
             </div>
