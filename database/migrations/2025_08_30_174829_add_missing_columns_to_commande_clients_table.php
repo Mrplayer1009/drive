@@ -6,26 +6,27 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::table('commande_clients', function (Blueprint $table) {
-            $table->foreignId('client_id')->constrained()->onDelete('cascade');
-            $table->foreignId('franchise_id')->constrained()->onDelete('cascade');
+            if (!Schema::hasColumn('commande_clients', 'client_id')) {
+                $table->foreignId('client_id')->constrained()->cascadeOnDelete();
+            }
+            if (!Schema::hasColumn('commande_clients', 'franchise_id')) {
+                $table->foreignId('franchise_id')->constrained()->cascadeOnDelete();
+            }
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::table('commande_clients', function (Blueprint $table) {
-            $table->dropForeign(['client_id']);
-            $table->dropForeign(['franchise_id']);
-            $table->dropColumn(['client_id', 'franchise_id']);
+            if (Schema::hasColumn('commande_clients', 'client_id')) {
+                $table->dropConstrainedForeignId('client_id');
+            }
+            if (Schema::hasColumn('commande_clients', 'franchise_id')) {
+                $table->dropConstrainedForeignId('franchise_id');
+            }
         });
     }
 };
