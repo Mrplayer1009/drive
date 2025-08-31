@@ -183,7 +183,10 @@ class StripeController extends Controller
             // Paiement normal (depuis le panier)
             $panierData = $request->session()->get('panier', []);
             
+            \Log::info('Paiement normal - Panier data:', $panierData);
+            
             if (empty($panierData)) {
+                \Log::warning('Panier vide lors du paiement normal');
                 return redirect()->route('client.panier')->with('error', 'Données du panier manquantes');
             }
 
@@ -195,10 +198,13 @@ class StripeController extends Controller
             
             // Créer la commande avec statut confirmé
             $commande = $this->createCommande($panierArray, $paymentIntent, $foodTruckId, 'confirmee');
+            
+            \Log::info('Commande créée avec succès - ID: ' . $commande->id . ', Statut: ' . $commande->statut);
 
             // Envoyer l'email de confirmation
             try {
                 \Mail::to($commande->client->email)->send(new \App\Mail\ConfirmationCommande($commande));
+                \Log::info('Email de confirmation envoyé pour la commande #' . $commande->id);
             } catch (\Exception $e) {
                 \Log::error('Erreur lors de l\'envoi de l\'email de confirmation pour la commande #' . $commande->id . ': ' . $e->getMessage());
             }
@@ -206,8 +212,11 @@ class StripeController extends Controller
             // Vider le panier et la réduction fidélité
             $request->session()->forget('panier');
             $request->session()->forget('reduction_fidelite');
+            
+            \Log::info('Panier vidé de la session');
 
             // Pour les paiements normaux, le client est toujours connecté (avec compte)
+            \Log::info('Redirection vers la page de succès avec commande #' . $commande->id);
             return view('client.stripe.success', [
                 'commande' => $commande,
                 'paymentIntent' => $paymentIntent,

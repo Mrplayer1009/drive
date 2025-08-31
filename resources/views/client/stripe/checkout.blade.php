@@ -157,17 +157,6 @@ document.addEventListener('DOMContentLoaded', function() {
     form.addEventListener('submit', async function(event) {
         event.preventDefault();
         
-        // Vider le panier localStorage immédiatement
-        localStorage.removeItem('panier');
-        console.log('Panier vidé du localStorage');
-        
-        // Mettre à jour le compteur du panier dans le header
-        const panierCount = document.querySelector('.panier-count');
-        if (panierCount) {
-            panierCount.textContent = '0';
-            panierCount.style.display = 'none';
-        }
-        
         // Désactiver le bouton et afficher le spinner
         submitButton.disabled = true;
         buttonText.style.display = 'none';
@@ -204,28 +193,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log('PaymentIntent ID:', result.paymentIntent.id);
                 console.log('Status:', result.paymentIntent.status);
                 
-                // Paiement réussi, vider le panier de la session et rediriger
-                fetch('{{ route("client.panier.vider") }}', {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                        'Content-Type': 'application/json',
-                    }
-                }).then(() => {
-                    // Rediriger vers la page de succès
-                    const successUrl = '{{ route("client.stripe.success") }}?payment_intent=' + result.paymentIntent.id;
-                    console.log('Redirection vers:', successUrl);
-                    
-                    // Utiliser setTimeout pour s'assurer que les logs sont affichés
-                    setTimeout(() => {
-                        window.location.href = successUrl;
-                    }, 1000);
-                }).catch(error => {
-                    console.error('Erreur lors du vidage du panier:', error);
-                    // Rediriger quand même
-                    const successUrl = '{{ route("client.stripe.success") }}?payment_intent=' + result.paymentIntent.id;
-                    window.location.href = successUrl;
-                });
+                // Paiement réussi, rediriger vers la page de succès
+                const successUrl = '{{ route("client.stripe.success") }}?payment_intent=' + result.paymentIntent.id;
+                console.log('Redirection vers:', successUrl);
+                
+                // Afficher un message de succès
+                const errorElement = document.getElementById('card-errors');
+                errorElement.textContent = 'Paiement réussi ! Redirection en cours...';
+                errorElement.className = 'mt-2 text-sm text-green-600';
+                
+                // Rediriger immédiatement
+                window.location.href = successUrl;
             }
         } catch (error) {
             console.error('Erreur:', error);

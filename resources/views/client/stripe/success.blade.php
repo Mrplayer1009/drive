@@ -65,7 +65,9 @@
                 
                 <div class="flex justify-between">
                     <span class="text-gray-600">Statut :</span>
-                    <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
+                    <span class="px-2 py-1 text-xs font-medium rounded-full 
+                        {{ $commande->statut === 'confirmee' ? 'bg-green-100 text-green-800' : 
+                           ($commande->statut === 'en_attente' ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800') }}">
                         {{ ucfirst($commande->statut) }}
                     </span>
                 </div>

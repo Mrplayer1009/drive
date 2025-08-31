@@ -89,15 +89,6 @@ class ClientController extends Controller
         return view('client.panier');
     }
 
-    public function viderPanier(Request $request)
-    {
-        // Vider le panier de la session
-        $request->session()->forget('panier');
-        $request->session()->forget('reduction_fidelite');
-        
-        return response()->json(['success' => true, 'message' => 'Panier vidé avec succès']);
-    }
-
     public function ajouterAuPanier(Request $request)
     {
         // Si c'est une requête AJAX avec des données de panier complètes

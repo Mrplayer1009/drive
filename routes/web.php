@@ -237,7 +237,6 @@ Route::prefix('client')->name('client.')->middleware('client')->group(function (
     Route::get('/menu/{id}', [ClientController::class, 'showMenu'])->name('menu.show');
     Route::get('/panier', [ClientController::class, 'panier'])->name('panier');
     Route::post('/panier/ajouter', [ClientController::class, 'ajouterAuPanier'])->name('panier.ajouter');
-    Route::post('/panier/vider', [ClientController::class, 'viderPanier'])->name('panier.vider');
     Route::get('/commandes', [ClientController::class, 'commandes'])->name('commandes');
     Route::get('/commandes/{id}', [ClientController::class, 'showCommande'])->name('commandes.show');
             Route::get('/profile', [ClientController::class, 'profile'])->name('profile');
