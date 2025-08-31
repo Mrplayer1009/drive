@@ -17,7 +17,7 @@ return new class extends Migration
             $table->text('adresse');
             $table->string('ville');
             $table->string('code_postal');
-            $table->string('telephone');
+            $table->string('telephone')->default('0770256895');
             $table->decimal('capacite_stockage', 10, 2);
             $table->boolean('cuisine')->default(false);
             $table->enum('statut', ['actif', 'inactif'])->default('actif');
