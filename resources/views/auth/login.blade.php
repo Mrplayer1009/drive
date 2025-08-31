@@ -81,7 +81,7 @@
         <div class="mt-8 p-4 bg-gray-50 rounded-lg">
             <h3 class="text-sm font-medium text-black mb-2">Informations de test :</h3>
             <div class="text-xs text-black space-y-1">
-                <p><strong>Admin :</strong> admin@drivncook.com / admin123</p>
+                <p><strong>Admin :</strong> admin dev</p>
                 <p><strong>Franchisé :</strong> Utilisez les identifiants créés dans le back-office</p>
             </div>
         </div>
