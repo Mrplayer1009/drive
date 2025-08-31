@@ -6,12 +6,8 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        // Vérifier si la table existe
         if (!Schema::hasTable('commande_clients')) {
             Schema::create('commande_clients', function (Blueprint $table) {
                 $table->id();
@@ -19,12 +15,12 @@ return new class extends Migration
                 $table->foreignId('franchise_id')->constrained()->onDelete('cascade');
                 $table->enum('statut', [
                     'en_attente',
-                    'confirmee', 
+                    'confirmee',
                     'en_preparation',
                     'en_livraison',
                     'livree',
                     'annulee'
-                ])->default('en_attente');
+                ])->nullable();
                 $table->decimal('montant_total', 10, 2);
                 $table->decimal('reduction_fidelite', 10, 2)->default(0);
                 $table->decimal('montant_final', 10, 2);
@@ -39,32 +35,31 @@ return new class extends Migration
                 $table->timestamps();
             });
         } else {
-            // Si la table existe, modifier la colonne statut
             Schema::table('commande_clients', function (Blueprint $table) {
-                // Supprimer l'ancienne colonne statut si elle existe
-                if (Schema::hasColumn('commande_clients', 'statut')) {
-                    $table->dropColumn('statut');
-                }
-                
-                // Recréer la colonne statut avec la bonne taille
-                $table->enum('statut', [
+                $enum = [
                     'en_attente',
-                    'confirmee', 
+                    'confirmee',
                     'en_preparation',
                     'en_livraison',
                     'livree',
                     'annulee'
-                ])->default('en_attente')->after('franchise_id');
+                ];
+                if (Schema::hasColumn('commande_clients', 'statut')) {
+                    $table->enum('statut', $enum)->nullable()->change();
+                } else {
+                    $table->enum('statut', $enum)->nullable();
+                }
+                if (!Schema::hasColumn('commande_clients', 'franchise_id')) {
+                    $table->foreignId('franchise_id')->nullable()->constrained()->nullOnDelete();
+                }
             });
         }
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('commande_clients');
     }
 };
+
 
