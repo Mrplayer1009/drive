@@ -72,10 +72,16 @@
 
         <!-- Liste des food trucks -->
         <div class="bg-white rounded-lg shadow-md p-6">
-            <h3 class="text-xl font-semibold text-gray-900 mb-4">
-                <i class="fas fa-truck mr-2 text-orange-600"></i>
-                Food Trucks disponibles
-            </h3>
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-semibold text-gray-900">
+                    <i class="fas fa-truck mr-2 text-orange-600"></i>
+                    Food Trucks disponibles
+                </h3>
+                <button id="show-all-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition duration-200">
+                    <i class="fas fa-list mr-2"></i>
+                    Voir tous les camions
+                </button>
+            </div>
             
             <div id="food-trucks-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <!-- Les food trucks seront chargés ici via JavaScript -->
@@ -83,8 +89,8 @@
             
             <div id="no-food-trucks" class="text-center py-12 hidden">
                 <i class="fas fa-truck text-gray-400 text-6xl mb-4"></i>
-                <h3 class="text-xl font-medium text-gray-900 mb-2">Aucun food truck trouvé</h3>
-                <p class="text-gray-600">Essayez d'augmenter le rayon de recherche ou de changer votre position.</p>
+                <h3 class="text-xl font-medium text-gray-900 mb-2">Aucun food truck disponible</h3>
+                <p class="text-gray-600">Aucun food truck n'est actuellement en service.</p>
             </div>
         </div>
     </div>
@@ -97,6 +103,7 @@ let map;
 let markers = [];
 let currentPosition = null;
 let foodTrucks = @json($foodTrucks);
+let showAllFoodTrucks = false;
 
 // Initialiser la carte
 function initMap() {
@@ -327,36 +334,55 @@ function searchAddress() {
 
 // Mettre à jour la liste des food trucks
 function updateFoodTrucksList() {
-    if (!currentPosition) return;
-    
-    const rayon = parseInt(document.getElementById('rayon-select').value);
     const foodTrucksList = document.getElementById('food-trucks-list');
     const noFoodTrucks = document.getElementById('no-food-trucks');
     
-    // Filtrer les food trucks par distance
-    const foodTrucksNearby = foodTrucks.filter(foodTruck => {
-        if (!foodTruck.latitude || !foodTruck.longitude) return false;
-        
-        const distance = calculateDistance(
-            currentPosition.lat, currentPosition.lng,
-            parseFloat(foodTruck.latitude), parseFloat(foodTruck.longitude)
-        );
-        
-        foodTruck.distance = distance;
-        return distance <= rayon;
-    });
+    // Si on affiche tous les food trucks ou si on n'a pas de position
+    let foodTrucksToShow = foodTrucks;
     
-    // Trier par distance
-    foodTrucksNearby.sort((a, b) => a.distance - b.distance);
+    if (!showAllFoodTrucks && currentPosition) {
+        const rayon = parseInt(document.getElementById('rayon-select').value);
+        
+        // Calculer la distance pour tous les food trucks
+        foodTrucksToShow = foodTrucks.filter(foodTruck => {
+            if (!foodTruck.latitude || !foodTruck.longitude) return true; // Afficher même sans coordonnées
+            
+            const distance = calculateDistance(
+                currentPosition.lat, currentPosition.lng,
+                parseFloat(foodTruck.latitude), parseFloat(foodTruck.longitude)
+            );
+            
+            foodTruck.distance = distance;
+            return distance <= rayon;
+        });
+        
+        // Trier par distance
+        foodTrucksToShow.sort((a, b) => (a.distance || 0) - (b.distance || 0));
+    } else if (showAllFoodTrucks && currentPosition) {
+        // Si on affiche tous les food trucks mais qu'on a une position, calculer quand même les distances
+        foodTrucksToShow = foodTrucks.map(foodTruck => {
+            if (foodTruck.latitude && foodTruck.longitude) {
+                const distance = calculateDistance(
+                    currentPosition.lat, currentPosition.lng,
+                    parseFloat(foodTruck.latitude), parseFloat(foodTruck.longitude)
+                );
+                foodTruck.distance = distance;
+            }
+            return foodTruck;
+        });
+        
+        // Trier par distance
+        foodTrucksToShow.sort((a, b) => (a.distance || 0) - (b.distance || 0));
+    }
     
-    if (foodTrucksNearby.length === 0) {
+    if (foodTrucksToShow.length === 0) {
         foodTrucksList.classList.add('hidden');
         noFoodTrucks.classList.remove('hidden');
     } else {
         foodTrucksList.classList.remove('hidden');
         noFoodTrucks.classList.add('hidden');
         
-        foodTrucksList.innerHTML = foodTrucksNearby.map(foodTruck => `
+        foodTrucksList.innerHTML = foodTrucksToShow.map(foodTruck => `
             <div class="border border-gray-200 rounded-lg p-6 hover:shadow-lg transition duration-200">
                 <div class="flex items-center justify-between mb-4">
                     <h4 class="text-lg font-semibold text-gray-900">${foodTruck.nom_complet}</h4>
@@ -376,10 +402,12 @@ function updateFoodTrucksList() {
                         <span class="text-sm text-gray-600">${foodTruck.telephone}</span>
                     </div>
                     
+                    ${currentPosition && foodTruck.distance ? `
                     <div class="flex items-center">
                         <i class="fas fa-route text-gray-500 mr-3"></i>
                         <span class="text-sm text-gray-600">${foodTruck.distance.toFixed(1)} km</span>
                     </div>
+                    ` : ''}
                 </div>
                 
                 <button onclick="selectFoodTruck(${foodTruck.id})" 
@@ -448,6 +476,9 @@ function selectFoodTruck(foodTruckId) {
 document.addEventListener('DOMContentLoaded', function() {
     initMap();
     
+    // Afficher tous les food trucks au chargement
+    updateFoodTrucksList();
+    
     // Géolocalisation
     document.getElementById('geolocate-btn').addEventListener('click', getCurrentLocation);
     
@@ -460,9 +491,22 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Changement de rayon
     document.getElementById('rayon-select').addEventListener('change', function() {
-        if (currentPosition) {
-            updateFoodTrucksList();
+        updateFoodTrucksList();
+    });
+    
+    // Bouton "Voir tous les camions"
+    document.getElementById('show-all-btn').addEventListener('click', function() {
+        showAllFoodTrucks = !showAllFoodTrucks;
+        
+        if (showAllFoodTrucks) {
+            this.innerHTML = '<i class="fas fa-map-marker-alt mr-2"></i>Voir les camions proches';
+            this.className = 'bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg font-medium transition duration-200';
+        } else {
+            this.innerHTML = '<i class="fas fa-list mr-2"></i>Voir tous les camions';
+            this.className = 'bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition duration-200';
         }
+        
+        updateFoodTrucksList();
     });
     
     // Mettre à jour le compteur du panier

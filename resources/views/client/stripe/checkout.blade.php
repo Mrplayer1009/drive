@@ -115,6 +115,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const stripe = Stripe('{{ config("services.stripe.key") }}');
     const elements = stripe.elements();
     
+    // Debug: vérifier les variables
+    console.log('Stripe Key:', '{{ config("services.stripe.key") }}');
+    console.log('Client Secret:', '{{ $clientSecret }}');
+    console.log('Route success:', '{{ route("client.stripe.success") }}');
+    
     // Créer l'élément de carte
     const cardElement = elements.create('card', {
         style: {
@@ -152,24 +157,40 @@ document.addEventListener('DOMContentLoaded', function() {
     form.addEventListener('submit', async function(event) {
         event.preventDefault();
         
+        // Vider le panier localStorage immédiatement
+        localStorage.removeItem('panier');
+        console.log('Panier vidé du localStorage');
+        
+        // Mettre à jour le compteur du panier dans le header
+        const panierCount = document.querySelector('.panier-count');
+        if (panierCount) {
+            panierCount.textContent = '0';
+            panierCount.style.display = 'none';
+        }
+        
         // Désactiver le bouton et afficher le spinner
         submitButton.disabled = true;
         buttonText.style.display = 'none';
         spinner.classList.remove('hidden');
         
         try {
-                         // Confirmer le paiement
-             const result = await stripe.confirmCardPayment('{{ $clientSecret }}', {
-                 payment_method: {
-                     card: cardElement,
-                     billing_details: {
-                         name: '{{ auth("client")->user()->nom }}',
-                         email: '{{ auth("client")->user()->email }}',
-                     },
-                 }
-             });
+            console.log('Tentative de confirmation du paiement avec clientSecret:', '{{ $clientSecret }}');
+            
+            // Confirmer le paiement
+            const result = await stripe.confirmCardPayment('{{ $clientSecret }}', {
+                payment_method: {
+                    card: cardElement,
+                    billing_details: {
+                        name: '{{ auth("client")->user()->nom }}',
+                        email: '{{ auth("client")->user()->email }}',
+                    },
+                }
+            });
+            
+            console.log('Résultat du paiement:', result);
             
             if (result.error) {
+                console.log('Erreur de paiement:', result.error);
                 // Afficher l'erreur
                 const errorElement = document.getElementById('card-errors');
                 errorElement.textContent = result.error.message;
@@ -179,8 +200,32 @@ document.addEventListener('DOMContentLoaded', function() {
                 buttonText.style.display = 'block';
                 spinner.classList.add('hidden');
             } else {
-                // Paiement réussi, rediriger vers la page de succès
-                window.location.href = '{{ route("client.stripe.success") }}?payment_intent=' + result.paymentIntent.id;
+                console.log('Paiement réussi!');
+                console.log('PaymentIntent ID:', result.paymentIntent.id);
+                console.log('Status:', result.paymentIntent.status);
+                
+                // Paiement réussi, vider le panier de la session et rediriger
+                fetch('{{ route("client.panier.vider") }}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Content-Type': 'application/json',
+                    }
+                }).then(() => {
+                    // Rediriger vers la page de succès
+                    const successUrl = '{{ route("client.stripe.success") }}?payment_intent=' + result.paymentIntent.id;
+                    console.log('Redirection vers:', successUrl);
+                    
+                    // Utiliser setTimeout pour s'assurer que les logs sont affichés
+                    setTimeout(() => {
+                        window.location.href = successUrl;
+                    }, 1000);
+                }).catch(error => {
+                    console.error('Erreur lors du vidage du panier:', error);
+                    // Rediriger quand même
+                    const successUrl = '{{ route("client.stripe.success") }}?payment_intent=' + result.paymentIntent.id;
+                    window.location.href = successUrl;
+                });
             }
         } catch (error) {
             console.error('Erreur:', error);

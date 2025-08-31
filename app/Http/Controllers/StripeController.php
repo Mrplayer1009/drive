@@ -15,6 +15,11 @@ class StripeController extends Controller
     public function __construct()
     {
         Stripe::setApiKey(config('services.stripe.secret'));
+        
+        // Désactiver la vérification SSL en développement
+        if (app()->environment('local')) {
+            \Stripe\Stripe::setVerifySslCerts(false);
+        }
     }
 
     public function checkout(Request $request)
@@ -58,6 +63,9 @@ class StripeController extends Controller
                 ]
             ]);
 
+            \Log::info('Checkout - Client Secret: ' . $paymentIntent->client_secret);
+            \Log::info('Checkout - Total: ' . $total);
+            
             return view('client.stripe.checkout', [
                 'clientSecret' => $paymentIntent->client_secret,
                 'total' => $total,
@@ -79,7 +87,10 @@ class StripeController extends Controller
             $commandeId = $request->get('commande_id');
             $token = $request->get('token');
             
-            \Log::info('Paramètres reçus - Commande ID: ' . $commandeId . ', Token: ' . $token);
+            \Log::info('=== SUCCESS STRIPE ===');
+            \Log::info('Paramètres reçus - PaymentIntent: ' . $paymentIntentId . ', Commande ID: ' . $commandeId . ', Token: ' . $token);
+            \Log::info('URL complète: ' . $request->fullUrl());
+            \Log::info('Méthode: ' . $request->method());
             
             if (!$paymentIntentId) {
                 \Log::error('PaymentIntentId manquant');
@@ -182,8 +193,8 @@ class StripeController extends Controller
             // Récupérer le food truck sélectionné depuis la session
             $foodTruckId = session('selected_food_truck_id');
             
-            // Créer la commande
-            $commande = $this->createCommande($panierArray, $paymentIntent, $foodTruckId);
+            // Créer la commande avec statut confirmé
+            $commande = $this->createCommande($panierArray, $paymentIntent, $foodTruckId, 'confirmee');
 
             // Envoyer l'email de confirmation
             try {
@@ -258,7 +269,7 @@ class StripeController extends Controller
         }
     }
 
-    private function createCommande($panierData, $paymentIntent, $foodTruckId)
+    private function createCommande($panierData, $paymentIntent, $foodTruckId, $statut = 'en_attente')
     {
         $client = auth('client')->user();
         
@@ -302,7 +313,7 @@ class StripeController extends Controller
             'client_id' => $client->id,
             'franchise_id' => $foodTruck->id, // Le food truck devient le franchisé responsable
             'food_truck_id' => $foodTruck->id, // Référence explicite au food truck
-            'statut' => 'en_attente', // Commence en attente pour validation par le franchisé
+            'statut' => $statut, // Utilise le statut passé en paramètre
             'montant_total' => $sousTotal,
             'reduction_fidelite' => $reductionFidelite,
             'montant_final' => $total,

@@ -24,11 +24,12 @@ class ClientController extends Controller
     public function selectFoodTruckPage()
     {
         $foodTrucks = Franchise::disponible()
-            ->avecCoordonnees()
-            ->avecCamions()
             ->with(['camions' => function($query) {
                 $query->where('franchise_camion.statut', 'actif');
             }])
+            ->whereHas('camions', function($query) {
+                $query->where('franchise_camion.statut', 'actif');
+            })
             ->get()
             ->map(function($franchise) {
                 $franchise->camions_actifs_count = $franchise->camions->count();
@@ -86,6 +87,15 @@ class ClientController extends Controller
     {
         // Récupérer les données du panier depuis localStorage (via JavaScript)
         return view('client.panier');
+    }
+
+    public function viderPanier(Request $request)
+    {
+        // Vider le panier de la session
+        $request->session()->forget('panier');
+        $request->session()->forget('reduction_fidelite');
+        
+        return response()->json(['success' => true, 'message' => 'Panier vidé avec succès']);
     }
 
     public function ajouterAuPanier(Request $request)
