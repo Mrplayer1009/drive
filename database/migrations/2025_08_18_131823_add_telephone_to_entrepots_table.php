@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (!Schema::hasColumn('entrepots', 'telephone')) {
         Schema::table('entrepots', function (Blueprint $table) {
             $table->string('telephone')->nullable()->after('code_postal');
         });
+    }
     }
 
     /**
